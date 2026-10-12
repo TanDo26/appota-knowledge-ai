@@ -1,0 +1,77 @@
+# Bộ câu hỏi hiệu chỉnh ngưỡng ABSTAIN — TÁCH RIÊNG khỏi bộ kiểm thử (cases.yaml).
+# Ngưỡng được chốt MỘT LẦN dựa trên bộ này rồi mới chạy eval, để tránh chỉnh ngưỡng theo test case.
+# Không câu nào ở đây trùng với câu hỏi trong cases.yaml.
+#
+# answerable: true  = trong phạm vi persona được xem có mục trả lời được câu hỏi
+# answerable: false = không có tài liệu nào trả lời được
+
+as_of: 2026-10-15
+
+questions:
+  # --- Trả lời được ---
+  - persona: linh
+    question: "Giờ làm việc tiêu chuẩn mỗi tuần là bao nhiêu giờ?"
+    answerable: true
+    expected_doc: GRP-HR-01@2
+  - persona: linh
+    question: "Hồ sơ hoàn ứng cần những giấy tờ gì?"
+    answerable: true
+    expected_doc: A-EXP-01@2
+  - persona: linh
+    question: "Phụ cấp lưu trú khi đi công tác trong nước là bao nhiêu?"
+    answerable: true
+    expected_doc: A-EXP-02@1
+  - persona: hoa
+    question: "Sự cố P1 phải phản hồi trong bao lâu?"
+    answerable: true
+    expected_doc: A-ENG-01@1
+  - persona: minh
+    question: "Nội dung quảng cáo phải qua mấy bước duyệt?"
+    answerable: true
+    expected_doc: B-MKT-01@1
+  - persona: minh
+    question: "Thực tập sinh được phụ cấp bao nhiêu mỗi tháng?"
+    answerable: true
+    expected_doc: B-INT-01@2
+  - persona: nam
+    question: "Phòng Sản xuất game có được làm việc từ xa không?"
+    answerable: true
+    expected_doc: B-REM-01@1
+  - persona: tuan
+    question: "Đăng ký nghỉ phép trước mấy ngày?"
+    answerable: true
+    expected_doc: A-LEAVE-01@3
+  - persona: hoa
+    question: "Lịch đánh giá hiệu suất giữa năm vào tháng mấy?"
+    answerable: true
+    expected_doc: A-ENG-02@1
+  - persona: linh
+    question: "Có được chia sẻ mã nguồn ra ngoài không?"
+    answerable: true
+    expected_doc: GRP-HR-01@2
+
+  # --- Không trả lời được ---
+  - persona: linh
+    question: "Công ty có xe đưa đón nhân viên không?"
+    answerable: false
+  - persona: minh
+    question: "Bảo hiểm sức khỏe có chi trả cho người thân không?"
+    answerable: false
+  - persona: nam
+    question: "Có được mang thú cưng đến văn phòng không?"
+    answerable: false
+  - persona: hoa
+    question: "Ngân sách team building năm nay là bao nhiêu?"
+    answerable: false
+  - persona: tuan
+    question: "Quy trình tuyển dụng gồm mấy vòng phỏng vấn?"
+    answerable: false
+  - persona: linh
+    question: "Công ty có hỗ trợ tiền gửi xe không?"
+    answerable: false
+  - persona: nam
+    question: "Mức thưởng Tết năm nay là bao nhiêu?"
+    answerable: false
+  - persona: minh
+    question: "Thực tập sinh có được cấp laptop không?"
+    answerable: false

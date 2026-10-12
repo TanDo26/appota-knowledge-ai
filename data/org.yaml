@@ -1,0 +1,39 @@
+# Cây tổ chức giả lập. Toàn bộ tên đều hư cấu.
+# `parent` khai báo tường minh vì GROUP không nằm trong đường dẫn id của công ty con.
+units:
+  - id: GROUP
+    parent: null
+    name: Tập đoàn (giả lập)
+    short: Tập đoàn
+  - id: CO_A
+    parent: GROUP
+    name: Công ty A (fintech)
+    short: Công ty A
+  - id: CO_A/ENG
+    parent: CO_A
+    name: Phòng Kỹ thuật
+    short: Kỹ thuật
+  - id: CO_A/ENG/PLATFORM
+    parent: CO_A/ENG
+    name: Nhóm Platform
+    short: Platform
+  - id: CO_A/HR
+    parent: CO_A
+    name: Phòng Nhân sự
+    short: Nhân sự
+  - id: CO_A/FIN
+    parent: CO_A
+    name: Phòng Tài chính
+    short: Tài chính
+  - id: CO_B
+    parent: GROUP
+    name: Công ty B (game)
+    short: Công ty B
+  - id: CO_B/MKT
+    parent: CO_B
+    name: Phòng Marketing
+    short: Marketing
+  - id: CO_B/GAME
+    parent: CO_B
+    name: Phòng Sản xuất game
+    short: Sản xuất game

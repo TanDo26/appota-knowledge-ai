@@ -1,0 +1,44 @@
+# Persona thay cho SSO trong MVP. Toàn bộ là nhân vật hư cấu.
+# employment_type: full_time | probation | intern
+# role: employee | manager | hr
+users:
+  - id: linh
+    name: Linh
+    title: Kỹ sư phần mềm
+    unit: CO_A/ENG/PLATFORM
+    role: employee
+    employment_type: full_time
+    seniority_years: 6
+    location: Hà Nội
+  - id: hoa
+    name: Hoa
+    title: Trưởng phòng Kỹ thuật
+    unit: CO_A/ENG
+    role: manager
+    employment_type: full_time
+    seniority_years: 9
+    location: Hà Nội
+  - id: tuan
+    name: Tuấn
+    title: Chuyên viên nhân sự
+    unit: CO_A/HR
+    role: hr
+    employment_type: full_time
+    seniority_years: 4
+    location: Hà Nội
+  - id: minh
+    name: Minh
+    title: Thực tập sinh nội dung
+    unit: CO_B/MKT
+    role: employee
+    employment_type: intern
+    seniority_years: 0
+    location: TP. Hồ Chí Minh
+  - id: nam
+    name: Nam
+    title: Game designer
+    unit: CO_B/GAME
+    role: employee
+    employment_type: probation
+    seniority_years: 0
+    location: TP. Hồ Chí Minh

@@ -1,0 +1,39 @@
+# Đầu mối liên hệ khi hệ thống từ chối (ABSTAIN) hoặc câu hỏi ngoài phạm vi (OUT_OF_SCOPE).
+# Định tuyến CHỈ theo từ khoá trong câu hỏi và công ty của người hỏi, không theo tài liệu bị ẩn,
+# để câu trả lời "không có dữ liệu" và "không có quyền" giống hệt nhau.
+teams:
+  hr:
+    CO_A: { team: "Phòng Nhân sự Công ty A", contact: "hr.a@example.com" }
+    CO_B: { team: "Phòng Nhân sự Công ty B", contact: "hr.b@example.com" }
+  finance:
+    CO_A: { team: "Phòng Tài chính Công ty A", contact: "finance.a@example.com" }
+    CO_B: { team: "Kế toán Công ty B", contact: "ketoan.b@example.com" }
+  eng:
+    CO_A: { team: "Văn phòng Phòng Kỹ thuật Công ty A", contact: "eng.a@example.com" }
+  marketing:
+    CO_B: { team: "Văn phòng Phòng Marketing Công ty B", contact: "mkt.b@example.com" }
+  it:
+    CO_A: { team: "Bộ phận IT Công ty A", contact: "it.a@example.com" }
+    CO_B: { team: "Bộ phận IT Công ty B", contact: "it.b@example.com" }
+
+# Quét theo thứ tự; khớp từ khoá đầu tiên thì dùng nhóm đó. Nhóm không có đầu mối ở công ty
+# của người hỏi thì rơi về default_team.
+routes:
+  - team: finance
+    keywords: [hoàn ứng, công tác phí, chi phí, thanh toán, hóa đơn, tạm ứng]
+  - team: eng
+    keywords: [on-call, trực, sự cố, kỹ thuật]
+  - team: marketing
+    keywords: [quảng cáo, nội dung, marketing]
+  - team: it
+    keywords: [chấm công, ứng dụng, tài khoản, mật khẩu, máy tính, wifi]
+  - team: hr
+    keywords: [lương, phép, nghỉ, thử việc, thực tập, đào tạo, học phí, bảo hiểm, tuyển dụng, đánh giá, làm việc từ xa]
+
+default_team: hr
+
+# Dữ liệu cá nhân (số ngày phép còn lại, bảng lương...) không nằm trong kho tri thức.
+personal_data:
+  system: Cổng nhân sự HRM
+  url: https://hrm.example.com
+  hint: Xem mục "Ngày phép của tôi" hoặc "Phiếu lương của tôi" sau khi đăng nhập.
