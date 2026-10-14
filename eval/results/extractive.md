@@ -1,6 +1,6 @@
 # Kết quả eval — chế độ `extractive`
 
-Chạy lúc 2026-10-12 20:16 · commit `73740e7` · ngày tra cứu 2026-10-15
+Chạy lúc 2026-10-14 22:08 · commit `41d920e-dirty` · ngày tra cứu 2026-10-15
 
 ## Tổng hợp
 
@@ -8,15 +8,16 @@ Chạy lúc 2026-10-12 20:16 · commit `73740e7` · ngày tra cứu 2026-10-15
 - Đúng trạng thái: 14/14 · nguồn kỳ vọng nằm trong nguồn trích: 10/10
 - Từ chối đúng: 3/3 · từ chối nhầm: 0
 - Ma trận rò rỉ: **0 rò rỉ** trên 80 lượt (5 persona × 16 câu hỏi)
+- Câu trả lời do Gemini viết: 0 · rơi về trích nguyên văn: 0
 - Theo loại: Bắt buộc 2/2 · Tốt 1/1 · Phiên bản 1/1 · Phân quyền 2/2 · Mâu thuẫn 1/1 · Khó 2/2 · Từ chối 1/1 · Có thể thất bại 2/2 · Dữ liệu không rõ 1/1 · Chế độ Gemini 1/1
 
 ## Từng lượt chạy
 
 | Case | Loại | Persona | Kỳ vọng | Thực tế | Nguồn trích | Kết quả |
 |---|---|---|---|---|---|---|
-| TC01 | Bắt buộc | linh | ANSWERED / ANSWERED_WITH_NOTE | ANSWERED | A-LEAVE-01@3#4 | Đạt |
+| TC01 | Bắt buộc | linh | ANSWERED / ANSWERED_WITH_NOTE | ANSWERED | A-LEAVE-01@3#1 | Đạt |
 | TC01 | Bắt buộc | minh | ANSWERED / ANSWERED_WITH_NOTE | ANSWERED | B-INT-01@2#2 | Đạt |
-| TC02 | Tốt | linh | ANSWERED / ANSWERED_WITH_NOTE | ANSWERED | A-LEAVE-01@3#4 | Đạt |
+| TC02 | Tốt | linh | ANSWERED / ANSWERED_WITH_NOTE | ANSWERED | A-LEAVE-01@3#1 | Đạt |
 | TC03 | Phiên bản | linh | ANSWERED_WITH_NOTE | ANSWERED_WITH_NOTE | GRP-REM-01@2#1 | Đạt |
 | TC04 | Phân quyền | minh | ABSTAIN | ABSTAIN | — | Đạt |
 | TC04 | Phân quyền | tuan | ANSWERED | ANSWERED | A-SAL-01@1#1 | Đạt |
@@ -38,26 +39,29 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong cont
 ### TC01 · linh — Đạt
 
 **Câu hỏi:** Quy định nghỉ phép của tôi như thế nào?  
-**Trạng thái:** ANSWERED · **chủ đề:** leave.unpaid · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Trạng thái:** ANSWERED · **chủ đề:** leave.annual_days · **độ phủ:** 1.0  
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
-- Chỉ có 1 nguồn, không cần phân xử.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 8.55 > leave.unpaid 4.52 > leave.carry_over 3.98 > leave.request 3.77.
+- R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
+- R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
 **Câu trả lời:**
 
-[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 4. Nghỉ không lương, hiệu lực từ 01/01/2026
-> Nhân sự được nghỉ không lương tối đa 30 ngày mỗi năm khi quản lý trực tiếp và Phòng Nhân sự cùng phê duyệt.
+[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 1. Số ngày phép năm, hiệu lực từ 01/01/2026
+> Nhân sự chính thức được 14 ngày phép năm hưởng nguyên lương; cứ đủ 5 năm thâm niên được cộng thêm 1 ngày.
 
 ### TC01 · minh — Đạt
 
 **Câu hỏi:** Quy định nghỉ phép của tôi như thế nào?  
 **Trạng thái:** ANSWERED · **chủ đề:** leave.annual_days · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 3: leave.annual_days 7.61.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -68,26 +72,29 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong cont
 ### TC02 · linh — Đạt
 
 **Câu hỏi:** toi duoc nghi phep bao nhieu ngay  
-**Trạng thái:** ANSWERED · **chủ đề:** leave.unpaid · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Trạng thái:** ANSWERED · **chủ đề:** leave.annual_days · **độ phủ:** 1.0  
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
-- Chỉ có 1 nguồn, không cần phân xử.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.53 > leave.unpaid 4.85 > leave.carry_over 4.43 > leave.request 4.20.
+- R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
+- R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
 **Câu trả lời:**
 
-[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 4. Nghỉ không lương, hiệu lực từ 01/01/2026
-> Nhân sự được nghỉ không lương tối đa 30 ngày mỗi năm khi quản lý trực tiếp và Phòng Nhân sự cùng phê duyệt.
+[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 1. Số ngày phép năm, hiệu lực từ 01/01/2026
+> Nhân sự chính thức được 14 ngày phép năm hưởng nguyên lương; cứ đủ 5 năm thâm niên được cộng thêm 1 ngày.
 
 ### TC03 · linh — Đạt
 
 **Câu hỏi:** Tôi được làm việc từ xa mấy ngày một tuần?  
 **Trạng thái:** ANSWERED_WITH_NOTE · **chủ đề:** remote.days_per_week · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 22.70 > remote.request 19.33.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -103,7 +110,7 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong cont
 
 **Câu hỏi:** Khung lương kỹ sư Công ty A là bao nhiêu?  
 **Trạng thái:** ABSTAIN · **chủ đề:** None · **độ phủ:** 0.18  
-**Đầu mối:** Phòng Nhân sự Công ty B (hr.b@example.com)
+**Đầu mối:** Phòng Nhân sự Công ty B (hr.b@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
@@ -117,10 +124,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Khung lương kỹ sư Công ty A là bao nhiêu?  
 **Trạng thái:** ANSWERED · **chủ đề:** salary.band · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.80.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -132,10 +140,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Phép năm chưa dùng có được chuyển sang năm sau không?  
 **Trạng thái:** ANSWERED_WITH_NOTE · **chủ đề:** leave.carry_over · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 64.99.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#2.
 - R3 Lệch: A-FAQ-01@1#2 ghi 5, khác nguồn thắng → gắn cờ cho chủ sở hữu.
 
@@ -152,10 +161,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Hạn nộp hồ sơ hoàn ứng là bao lâu?  
 **Trạng thái:** CONFLICT · **chủ đề:** expense.claim_deadline · **độ phủ:** 1.0  
-**Đầu mối:** Phòng Hành chính Công ty A (admin.a@example.com), Phòng Tài chính Công ty A (finance.a@example.com)
+**Đầu mối:** Phòng Hành chính Công ty A (admin.a@example.com), Phòng Tài chính Công ty A (finance.a@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 40.12.
 - R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu (A-EXP-01@2: 30; A-EXP-02@1: 15). Không tự chọn.
 
 **Câu trả lời:**
@@ -174,7 +184,7 @@ Các tài liệu đang hiệu lực nói khác nhau về vấn đề này. Hệ 
 
 **Câu hỏi:** Công ty có hỗ trợ học phí MBA không?  
 **Trạng thái:** ABSTAIN · **chủ đề:** None · **độ phủ:** 0.103  
-**Đầu mối:** Phòng Nhân sự Công ty A (hr.a@example.com)
+**Đầu mối:** Phòng Nhân sự Công ty A (hr.a@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
@@ -188,10 +198,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Tôi còn bao nhiêu ngày phép?  
 **Trạng thái:** OUT_OF_SCOPE · **chủ đề:** leave.annual_days · **độ phủ:** 1.0  
-**Đầu mối:** Phòng Nhân sự Công ty A (hr.a@example.com)
+**Đầu mối:** Phòng Nhân sự Công ty A (hr.a@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 12.19 > leave.carry_over 7.69.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
 - R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
@@ -208,10 +219,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Tôi đang thử việc thì có được nghỉ phép không?  
 **Trạng thái:** ANSWERED · **chủ đề:** leave.annual_days · **độ phủ:** 1.0  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.25 > leave.request 5.28.
 - R2 Đối tượng: B-LEAVE-01@1 có mục riêng cho Thử việc (B-LEAVE-01@1#4), bỏ mục chung B-LEAVE-01@1#1.
 
 **Câu trả lời:**
@@ -223,10 +235,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Muốn làm ở nhà vài hôm thì có được không?  
 **Trạng thái:** ANSWERED_WITH_NOTE · **chủ đề:** remote.days_per_week · **độ phủ:** 0.741  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 20.87 > remote.request 17.89.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -242,7 +255,7 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Phụ cấp trực on-call của nhóm Platform là bao nhiêu?  
 **Trạng thái:** ABSTAIN · **chủ đề:** None · **độ phủ:** 0.381  
-**Đầu mối:** Văn phòng Phòng Kỹ thuật Công ty A (eng.a@example.com)
+**Đầu mối:** Văn phòng Phòng Kỹ thuật Công ty A (eng.a@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
@@ -256,10 +269,11 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Câu hỏi:** Hệ thống chấm công mới dùng thế nào?  
 **Trạng thái:** ANSWERED · **chủ đề:** attendance.system · **độ phủ:** 0.757  
-**Đầu mối:** —
+**Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 46.35.
 
 **Câu trả lời:**
 

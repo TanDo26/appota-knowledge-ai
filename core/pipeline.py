@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import re
+from collections import defaultdict
 from datetime import date
 
 from core.access import audience_ok, filter_for
-from core.answer import extractive_answer, fmt_date, make_citations
+from core.answer import ABSTAIN_TEXT, extractive_answer, fmt_date, gemini_answer, make_citations
 from core.loader import KnowledgeBase
 from core.models import (
     ABSTAIN,
@@ -19,7 +20,7 @@ from core.models import (
     User,
 )
 from core.resolver import resolve
-from core.retrieval import MIN_COVERAGE, search
+from core.retrieval import MIN_COVERAGE, Hit, search
 from core.text import fold
 
 # Questions about the asker's own records (remaining leave, own payslip). Matched on folded text.
@@ -34,10 +35,20 @@ PERSONAL_DATA_PATTERNS = [
     )
 ]
 
-ABSTAIN_TEXT = (
-    "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, "
-    "nên không đưa ra câu trả lời để tránh sai."
-)
+def choose_topic(hits: list[Hit]) -> tuple[str, str]:
+    """Main topic = the topic with the highest summed BM25 score among relevant top hits.
+
+    Taking only the top hit's topic was a coin flip when sections of one document nearly tie
+    (eval run 1, TC01/TC02); a topic backed by several sections (policy + FAQ) is more reliable.
+    """
+    votes: dict[str, float] = defaultdict(float)
+    for h in hits:
+        if h.coverage >= MIN_COVERAGE:
+            votes[h.section.topic] += h.score
+    first = hits[0].section.topic
+    best = max(votes, key=lambda t: (votes[t], t == first))
+    ranked = sorted(votes.items(), key=lambda kv: -kv[1])
+    return best, " > ".join(f"{t} {v:.2f}" for t, v in ranked)
 
 
 def is_personal_data(question: str) -> bool:
@@ -108,8 +119,9 @@ def ask(
         return Result(status=ABSTAIN, answer=ABSTAIN_TEXT, contact=route_contact(kb, user, question), trace=trace)
 
     # Step 4 — resolver on the main topic
-    topic = top.section.topic
+    topic, tally = choose_topic(hits)
     trace.main_topic = topic
+    trace.resolver_steps.append(f"Chọn chủ đề theo tổng điểm các mục liên quan trong top {len(hits)}: {tally}.")
     candidates = [s for s in fr.sections if s.topic == topic]
     res = resolve(candidates, kb, user)
     trace.resolver_steps.extend(res.steps + res.warnings)
@@ -151,9 +163,21 @@ def ask(
         if status == CONFLICT:
             result.contact = ", ".join(sorted({f"{f.owner_team} ({f.owner_contact})" for f in flags}))
 
-    # Step 5 — answer
+    # Step 5 — answer. Gemini only rewrites clear answers; CONFLICT and OUT_OF_SCOPE stay deterministic
+    # so the model can neither pick a side in a conflict nor produce a personal figure.
     trace.answer_mode = "extractive"
-    result.answer = extractive_answer(result)
+    if mode == "gemini" and result.status in (ANSWERED, ANSWERED_WITH_NOTE):
+        if llm is None:
+            result.answer = extractive_answer(result)
+            result.fallback = "Chưa cấu hình GEMINI_API_KEY"
+            trace.answer_mode = "extractive (dự phòng)"
+            trace.postcheck.append("Không có key Gemini → trích nguyên văn")
+        else:
+            result = gemini_answer(result, user, kb.unit_label(user.unit), question, llm)
+            if result.status == ABSTAIN:
+                result.contact = route_contact(kb, user, question)
+    else:
+        result.answer = extractive_answer(result)
     return result
 
 

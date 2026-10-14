@@ -148,6 +148,9 @@ class Result:
     # Exactly what would be sent to the LLM; checked by the leak matrix.
     context_sections: list[Section] = field(default_factory=list)
     trace: Trace | None = None
+    # Set when Gemini was requested but the extractive text was shown instead (and why).
+    fallback: str | None = None
+    quota_hit: bool = False
 
     def public_view(self) -> dict:
         """Everything a normal (non-auditor) user can see. Used by the UI and the leak matrix."""
@@ -159,6 +162,7 @@ class Result:
             "notes": list(self.notes),
             "flags": [f.__dict__ for f in self.flags],
             "contact": self.contact,
+            "fallback": self.fallback,
             "context": [{"id": s.id, "heading": s.heading, "body": s.body} for s in self.context_sections],
             "trace": None if t is None else {
                 "excluded_counts": t.excluded_counts,

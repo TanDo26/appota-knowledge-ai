@@ -8,6 +8,7 @@ import streamlit as st
 from core.access import REASON_LABELS, filter_for
 from core.answer import DOC_TYPE_LABELS, fmt_date
 from core.lint import lint
+from core.llm import get_llm
 from core.loader import KnowledgeBase, load_kb
 from core.models import (
     ABSTAIN,
@@ -37,6 +38,39 @@ STATUS_UI = {
 @st.cache_resource
 def get_kb() -> KnowledgeBase:
     return load_kb()
+
+
+@st.cache_resource
+def get_gemini():
+    return get_llm()
+
+
+@st.cache_resource
+def answer_cache() -> dict:
+    """Shared across sessions: the same (persona, question, date, mode) never spends quota twice."""
+    return {}
+
+
+MAX_GEMINI_PER_SESSION = 20
+
+
+def answer(asker: User, question: str, day: date, mode: str) -> Result:
+    if mode == "gemini":
+        used = st.session_state.get("gemini_calls", 0)
+        if used >= MAX_GEMINI_PER_SESSION:
+            result = ask(kb, asker, question, as_of=day)
+            result.fallback = f"Đã dùng hết {MAX_GEMINI_PER_SESSION} câu hỏi Gemini cho phiên này"
+            return result
+    key = (asker.id, question.strip(), day, mode)
+    cache = answer_cache()
+    if key in cache:
+        return cache[key]
+    result = ask(kb, asker, question, as_of=day, mode=mode, llm=get_gemini())
+    if mode == "gemini" and result.trace and result.trace.answer_mode == "gemini":
+        st.session_state["gemini_calls"] = st.session_state.get("gemini_calls", 0) + 1
+    if not result.quota_hit:  # retry later instead of caching a quota failure
+        cache[key] = result
+    return result
 
 
 @st.cache_resource
@@ -77,8 +111,15 @@ with st.sidebar:
             f"Thâm niên: {user.seniority_years} năm · {user.location}"
         )
     st.divider()
-    st.toggle("Dùng Gemini", value=False, disabled=True,
-              help="Chế độ Gemini sẽ được bật ở bước tiếp theo. Hiện trả lời bằng trích nguyên văn.")
+    gemini_ready = get_gemini() is not None
+    use_gemini = st.toggle(
+        "Dùng Gemini", value=gemini_ready, disabled=not gemini_ready,
+        help=("Gemini viết câu trả lời từ đúng các nguồn đã chọn; hậu kiểm không đạt thì hiện trích nguyên văn."
+              if gemini_ready else "Chưa cấu hình GEMINI_API_KEY nên trả lời bằng trích nguyên văn."),
+    )
+    mode = "gemini" if use_gemini else "extractive"
+    if use_gemini:
+        st.caption(f"Đã dùng {st.session_state.get('gemini_calls', 0)}/{MAX_GEMINI_PER_SESSION} câu hỏi Gemini trong phiên này.")
     as_of = st.date_input("Ngày tra cứu", value=date.today(), format="DD/MM/YYYY",
                           help="Đổi ngày để xem phiên bản nào có hiệu lực vào thời điểm đó.")
     audit = st.toggle("Chế độ kiểm định", value=False,
@@ -91,6 +132,11 @@ def render_result(result: Result, asker: User) -> None:
     color, label = STATUS_UI[result.status]
     st.caption(f"Đang trả lời cho: **{persona_line(asker)}**")
     st.markdown(f":{color}-background[**{label}**] `{result.status}`")
+    if result.fallback and mode == "gemini":
+        if result.quota_hit:
+            st.warning("Gemini tạm hết hạn mức — đang hiện **trích nguyên văn** từ nguồn.", icon="⚠️")
+        else:
+            st.caption(f"Hiện trích nguyên văn thay cho câu trả lời của Gemini: {result.fallback}")
     st.markdown(result.answer)
     for note in result.notes:
         st.info(note, icon="📝")
@@ -149,7 +195,7 @@ tab_qa, tab_cmp, tab_eval, tab_data = st.tabs(["Hỏi đáp", "So sánh 2 person
 with tab_qa:
     q = question_input("qa")
     if st.button("Hỏi", type="primary", key="qa_go") and q.strip():
-        render_result(ask(kb, user, q, as_of=as_of), user)
+        render_result(answer(user, q, as_of, mode), user)
 
 with tab_cmp:
     st.caption("Cùng một câu hỏi, hai người hỏi khác nhau → hai câu trả lời đúng khác nhau.")
@@ -163,7 +209,7 @@ with tab_cmp:
         for col, uid in ((col_l, left), (col_r, right)):
             with col:
                 with st.container(border=True):
-                    render_result(ask(kb, kb.users[uid], q2, as_of=as_of), kb.users[uid])
+                    render_result(answer(kb.users[uid], q2, as_of, mode), kb.users[uid])
 
 with tab_eval:
     cfg = load_cases()
@@ -171,6 +217,8 @@ with tab_eval:
         f"Chạy {len(cfg['cases'])} test case trong `eval/cases.yaml` (kỳ vọng viết trước khi code) và ma trận rò rỉ. "
         f"Ngày tra cứu cố định: **{fmt_date(cfg['as_of'])}**."
     )
+    st.caption("Nút dưới chạy chế độ trích nguyên văn để không tốn hạn mức Gemini. "
+               "Kết quả chế độ Gemini: chạy `python -m eval.run_eval --mode gemini`, xem `eval/results/gemini.md`.")
     if st.button("Chạy bộ kiểm thử (trích nguyên văn)", type="primary"):
         with st.spinner("Đang chạy..."):
             rows = run_cases(kb, cfg, "extractive")

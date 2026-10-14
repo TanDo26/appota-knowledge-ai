@@ -1,7 +1,8 @@
 {
   "mode": "extractive",
-  "run_at": "2026-10-12 20:16",
-  "commit": "73740e7",
+  "model": null,
+  "run_at": "2026-10-14 22:08",
+  "commit": "41d920e-dirty",
   "as_of": "2026-10-15",
   "metrics": {
     "runs_passed": "14/14",
@@ -22,6 +23,8 @@
     "status_accuracy": "14/14",
     "correct_abstain": "3/3",
     "false_abstain": 0,
+    "gemini_answers": 0,
+    "fallbacks": 0,
     "leaks": 0,
     "leak_runs": 80
   },
@@ -48,19 +51,22 @@
       },
       "status": "ANSWERED",
       "cited": [
-        "A-LEAVE-01@3#4"
+        "A-LEAVE-01@3#1"
       ],
       "notes": [],
       "flags": [],
       "contact": null,
-      "answer": "[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 4. Nghỉ không lương, hiệu lực từ 01/01/2026\n> Nhân sự được nghỉ không lương tối đa 30 ngày mỗi năm khi quản lý trực tiếp và Phòng Nhân sự cùng phê duyệt.",
+      "answer": "[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 1. Số ngày phép năm, hiệu lực từ 01/01/2026\n> Nhân sự chính thức được 14 ngày phép năm hưởng nguyên lương; cứ đủ 5 năm thâm niên được cộng thêm 1 ngày.",
       "coverage": 1.0,
-      "topic": "leave.unpaid",
+      "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chỉ có 1 nguồn, không cần phân xử."
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 8.55 > leave.unpaid 4.52 > leave.carry_over 3.98 > leave.request 3.77.",
+        "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
+        "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -94,10 +100,12 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 3: leave.annual_days 7.61.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -122,19 +130,22 @@
       },
       "status": "ANSWERED",
       "cited": [
-        "A-LEAVE-01@3#4"
+        "A-LEAVE-01@3#1"
       ],
       "notes": [],
       "flags": [],
       "contact": null,
-      "answer": "[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 4. Nghỉ không lương, hiệu lực từ 01/01/2026\n> Nhân sự được nghỉ không lương tối đa 30 ngày mỗi năm khi quản lý trực tiếp và Phòng Nhân sự cùng phê duyệt.",
+      "answer": "[S1] Chính sách nghỉ phép Công ty A — phiên bản 3, mục 1. Số ngày phép năm, hiệu lực từ 01/01/2026\n> Nhân sự chính thức được 14 ngày phép năm hưởng nguyên lương; cứ đủ 5 năm thâm niên được cộng thêm 1 ngày.",
       "coverage": 1.0,
-      "topic": "leave.unpaid",
+      "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chỉ có 1 nguồn, không cần phân xử."
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.53 > leave.unpaid 4.85 > leave.carry_over 4.43 > leave.request 4.20.",
+        "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
+        "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -170,10 +181,12 @@
       "coverage": 1.0,
       "topic": "remote.days_per_week",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 22.70 > remote.request 19.33.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -205,6 +218,7 @@
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -232,10 +246,12 @@
       "coverage": 1.0,
       "topic": "salary.band",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.80.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -274,11 +290,13 @@
       "coverage": 1.0,
       "topic": "leave.carry_over",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 64.99.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#2.",
         "R3 Lệch: A-FAQ-01@1#2 ghi 5, khác nguồn thắng → gắn cờ cho chủ sở hữu."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -315,10 +333,12 @@
       "coverage": 1.0,
       "topic": "expense.claim_deadline",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 40.12.",
         "R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu (A-EXP-01@2: 30; A-EXP-02@1: 15). Không tự chọn."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -347,6 +367,7 @@
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -377,11 +398,13 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 12.19 > leave.carry_over 7.69.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
         "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -413,10 +436,12 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.25 > leave.request 5.28.",
         "R2 Đối tượng: B-LEAVE-01@1 có mục riêng cho Thử việc (B-LEAVE-01@1#4), bỏ mục chung B-LEAVE-01@1#1."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -447,10 +472,12 @@
       "coverage": 0.741,
       "topic": "remote.days_per_week",
       "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 20.87 > remote.request 17.89.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -480,6 +507,7 @@
       ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     },
@@ -513,9 +541,12 @@
       "answer": "[S1] Thông báo hệ thống chấm công mới — phiên bản 1, mục 1. Thay đổi hệ thống chấm công, hiệu lực từ 01/10/2026\n> Từ ngày 01/11/2026, toàn Tập đoàn chuyển từ máy chấm công vân tay sang ứng dụng chấm công ChamCong Go (tên giả lập). Nhân sự cài ứng dụng từ cổng phần mềm nội bộ và đăng nhập bằng tài khoản email công ty.\n\n[S2] Thông báo hệ thống chấm công mới — phiên bản 1, mục 2. Cách chấm công trên ứng dụng, hiệu lực từ 01/10/2026\n> Bấm \"Check-in\" khi đến và \"Check-out\" khi về trên ứng dụng, trong lúc điện thoại đang kết nối wifi văn phòng. Quên chấm công thì gửi giải trình trên ứng dụng trong vòng 3 ngày làm việc; quá hạn sẽ tính là nghỉ không phép.",
       "coverage": 0.757,
       "topic": "attendance.system",
-      "resolver_steps": [],
+      "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 46.35."
+      ],
       "postcheck": [],
       "answer_mode": "extractive",
+      "fallback": null,
       "passed": true,
       "failures": []
     }

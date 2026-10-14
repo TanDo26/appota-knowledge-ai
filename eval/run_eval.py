@@ -19,6 +19,7 @@ from pathlib import Path
 
 import yaml
 
+from core.llm import get_llm
 from core.loader import KnowledgeBase, load_kb
 from core.models import ABSTAIN, Result
 from core.pipeline import ask
@@ -72,13 +73,23 @@ def check(result: Result, expect: dict) -> list[str]:
     return fails
 
 
-def run_cases(kb: KnowledgeBase, cfg: dict, mode: str, llm=None) -> list[dict]:
+def cached_ask(kb: KnowledgeBase, user, question: str, cfg: dict, mode: str, llm, memo: dict | None) -> Result:
+    """One pipeline run per (persona, question), shared by the cases and the leak matrix (saves LLM quota)."""
+    if memo is None:
+        return ask(kb, user, question, as_of=cfg["as_of"], mode=mode, llm=llm)
+    key = (user.id, question)
+    if key not in memo:
+        memo[key] = ask(kb, user, question, as_of=cfg["as_of"], mode=mode, llm=llm)
+    return memo[key]
+
+
+def run_cases(kb: KnowledgeBase, cfg: dict, mode: str, llm=None, memo: dict | None = None) -> list[dict]:
     rows = []
     for case in cfg["cases"]:
         missing_ingest = [k for k in case.get("expect_ingest_flags", []) if not kb.docs_by_key[k].injection_lines]
         for run in case["runs"]:
             user = kb.users[run["persona"]]
-            result = ask(kb, user, case["question"], as_of=cfg["as_of"], mode=mode, llm=llm)
+            result = cached_ask(kb, user, case["question"], cfg, mode, llm, memo)
             fails = check(result, run["expect"]) + [f"lớp nạp không gắn cờ injection cho {k}" for k in missing_ingest]
             t = result.trace
             rows.append({
@@ -98,19 +109,20 @@ def run_cases(kb: KnowledgeBase, cfg: dict, mode: str, llm=None) -> list[dict]:
                 "resolver_steps": t.resolver_steps if t else [],
                 "postcheck": t.postcheck if t else [],
                 "answer_mode": t.answer_mode if t else None,
+                "fallback": result.fallback,
                 "passed": not fails,
                 "failures": fails,
             })
     return rows
 
 
-def run_leak_matrix(kb: KnowledgeBase, cfg: dict, mode: str, llm=None) -> dict:
+def run_leak_matrix(kb: KnowledgeBase, cfg: dict, mode: str, llm=None, memo: dict | None = None) -> dict:
     questions = list(dict.fromkeys([c["question"] for c in cfg["cases"]] + cfg["leak_matrix"]["attack_questions"]))
     restricted = cfg["leak_matrix"]["restricted"]
     leaks, runs = [], 0
     for user in kb.users.values():
         for q in questions:
-            result = ask(kb, user, q, as_of=cfg["as_of"], mode=mode, llm=llm)
+            result = cached_ask(kb, user, q, cfg, mode, llm, memo)
             view = result.public_view()
             runs += 1
             for r in restricted:
@@ -143,6 +155,8 @@ def metrics(rows: list[dict], leak: dict) -> dict:
         "status_accuracy": f"{len(status_ok)}/{len(rows)}",
         "correct_abstain": f"{len(got_abstain)}/{len(want_abstain)}",
         "false_abstain": len(false_abstain),
+        "gemini_answers": sum(1 for r in rows if r.get("answer_mode") == "gemini"),
+        "fallbacks": sum(1 for r in rows if r.get("fallback")),
         "leaks": len(leak["leaks"]),
         "leak_runs": leak["runs"],
     }
@@ -150,7 +164,8 @@ def metrics(rows: list[dict], leak: dict) -> dict:
 
 def git_head() -> str:
     try:
-        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
+        # "-dirty" marks runs made with uncommitted changes, so the header never claims a commit it was not.
+        return subprocess.run(["git", "describe", "--always", "--dirty"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
     except OSError:
         return "?"
 
@@ -167,6 +182,7 @@ def to_markdown(mode: str, cfg: dict, rows: list[dict], leak: dict, m: dict, run
         f"- Đúng trạng thái: {m['status_accuracy']} · nguồn kỳ vọng nằm trong nguồn trích: {m['source_accuracy']}",
         f"- Từ chối đúng: {m['correct_abstain']} · từ chối nhầm: {m['false_abstain']}",
         f"- Ma trận rò rỉ: **{m['leaks']} rò rỉ** trên {m['leak_runs']} lượt ({leak['personas']} persona × {leak['questions']} câu hỏi)",
+        f"- Câu trả lời do Gemini viết: {m['gemini_answers']} · rơi về trích nguyên văn: {m['fallbacks']}",
         "- Theo loại: " + " · ".join(f"{t} {v}" for t, v in m["pass_rate_by_type"].items()),
         "",
         "## Từng lượt chạy",
@@ -193,7 +209,8 @@ def to_markdown(mode: str, cfg: dict, rows: list[dict], leak: dict, m: dict, run
             "",
             f"**Câu hỏi:** {r['question']}  ",
             f"**Trạng thái:** {r['status']} · **chủ đề:** {r['topic']} · **độ phủ:** {r['coverage']}  ",
-            f"**Đầu mối:** {r['contact'] or '—'}",
+            f"**Đầu mối:** {r['contact'] or '—'} · **chế độ trả lời:** {r['answer_mode']}"
+            + (f" · **dự phòng vì:** {r['fallback']}" if r.get("fallback") else ""),
             "",
             "**Resolver / trace:**",
             "",
@@ -214,26 +231,34 @@ def to_markdown(mode: str, cfg: dict, rows: list[dict], leak: dict, m: dict, run
 def main(argv: list[str] | None = None) -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--mode", choices=["extractive"], default="extractive")
+    parser.add_argument("--mode", choices=["extractive", "gemini"], default="extractive")
     args = parser.parse_args(argv)
 
     kb = load_kb()
     cfg = load_cases()
     llm = None
-    rows = run_cases(kb, cfg, args.mode, llm)
-    leak = run_leak_matrix(kb, cfg, args.mode, llm)
+    if args.mode == "gemini":
+        # Retries on 429 and a gap between calls keep a batch run inside free-tier per-minute limits.
+        llm = get_llm(max_retries=2, min_interval=6.5)
+        if llm is None:
+            print("Chưa cấu hình GEMINI_API_KEY (biến môi trường hoặc .streamlit/secrets.toml).")
+            return 2
+        print(f"Gemini model: {llm.model}")
+    memo: dict = {}
+    rows = run_cases(kb, cfg, args.mode, llm, memo)
+    leak = run_leak_matrix(kb, cfg, args.mode, llm, memo)
     m = metrics(rows, leak)
     run_at = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     RESULTS.mkdir(exist_ok=True)
-    payload = {"mode": args.mode, "run_at": run_at, "commit": git_head(), "as_of": str(cfg["as_of"]),
+    payload = {"mode": args.mode, "model": llm.model if llm else None, "run_at": run_at, "commit": git_head(), "as_of": str(cfg["as_of"]),
                "metrics": m, "rows": rows, "leak_matrix": leak}
     (RESULTS / f"{args.mode}.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     (RESULTS / f"{args.mode}.md").write_text(to_markdown(args.mode, cfg, rows, leak, m, run_at), encoding="utf-8")
 
     for r in rows:
         mark = "ĐẠT " if r["passed"] else "CHƯA"
-        print(f"{mark} {r['case']:5} {r['persona']:5} {r['status']:19} {', '.join(r['cited']) or '—'}")
+        print(f"{mark} {r['case']:5} {r['persona']:5} {r['status']:19} {r['answer_mode']:22} {', '.join(r['cited']) or '—'}")
         for f in r["failures"]:
             print(f"        - {f}")
     print(json.dumps(m, ensure_ascii=False, indent=2))

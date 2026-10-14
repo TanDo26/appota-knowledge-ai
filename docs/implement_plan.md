@@ -427,40 +427,40 @@ Mục tiêu: có kết quả kiểm thử thật, không phụ thuộc LLM.
 Mục tiêu: có bản online chạy được sớm, trước khi thêm LLM.
 - [x] `app.py` đủ các tab ở mục 7, chạy chế độ trích nguyên văn; công tắc Gemini để sẵn nhưng chưa bật — Mình
 - [x] Commit local, báo bạn code đã sẵn sàng — Mình
-- [ ] Tạo repo GitHub public, thêm remote; kiểm `git log` không có key rồi push — **Bạn**
-- [ ] Deploy Streamlit Community Cloud — **Bạn**
-- [ ] Lấy Gemini API key (Google AI Studio), nhập vào Secrets của Streamlit Cloud và vào `.streamlit/secrets.toml` trên máy — **Bạn**
+- [x] Tạo repo GitHub public, thêm remote; kiểm `git log` không có key rồi push — **Bạn**
+- [x] Deploy Streamlit Community Cloud — **Bạn**
+- [x] Lấy Gemini API key (Google AI Studio), nhập vào Secrets của Streamlit Cloud và vào `.streamlit/secrets.toml` trên máy — **Bạn**
 
 **Xong khi:** link online mở được; tab "So sánh 2 persona" trên bản online cho kết quả TC01 đúng; key chỉ nằm trong Secrets và trong file đã bị ignore.
 
 ### P6 — Lớp Gemini và hậu kiểm
 Mục tiêu: thêm chế độ Gemini mà không làm hỏng chế độ trích nguyên văn.
-- [ ] `core/llm.py`: wrapper `google-genai`, model đọc từ `GEMINI_MODEL`; kiểm lại tên model và hạn mức free tier
-- [ ] `core/answer.py`, chế độ Gemini: prompt bọc `<source id="S1">`, đầu ra JSON `{answer, citations[], insufficient}`, 3 bước hậu kiểm; không đạt thì rơi về trích nguyên văn (mục 3.4)
-- [ ] Bảo vệ quota: giới hạn số câu hỏi mỗi phiên, cache theo (persona, câu hỏi), lỗi quota thì chuyển trích nguyên văn kèm banner
-- [ ] Bật công tắc Gemini trong `app.py`; `run_eval` nhận `--mode gemini`
-- [ ] Unit test hậu kiểm với đầu ra LLM giả lập: trích dẫn không có thật · con số lạ · `insufficient = true` · JSON hỏng
-- [ ] Commit local, báo bạn push
+- [x] `core/llm.py`: wrapper `google-genai`, model đọc từ `GEMINI_MODEL`; kiểm lại tên model và hạn mức free tier
+- [x] `core/answer.py`, chế độ Gemini: prompt bọc `<source id="S1">`, đầu ra JSON `{answer, citations[], insufficient}`, 3 bước hậu kiểm; không đạt thì rơi về trích nguyên văn (mục 3.4)
+- [x] Bảo vệ quota: giới hạn số câu hỏi mỗi phiên, cache theo (persona, câu hỏi), lỗi quota thì chuyển trích nguyên văn kèm banner
+- [x] Bật công tắc Gemini trong `app.py`; `run_eval` nhận `--mode gemini`
+- [x] Unit test hậu kiểm với đầu ra LLM giả lập: trích dẫn không có thật · con số lạ · `insufficient = true` · JSON hỏng
+- [x] Báo bạn phần đã thay đổi để bạn commit, push
 
 **Xong khi:** pytest pass; khi không có key, cả app và eval vẫn chạy (tự rơi về trích nguyên văn).
 
 ### P7 — Eval Gemini và sửa lỗi
 Mục tiêu: có kết quả thật của chế độ Gemini và sửa các lỗi thật.
-- [ ] Chạy `python -m eval.run_eval --mode gemini` trên máy, gửi lại `eval/results/gemini.*` — **Bạn**
-- [ ] Xử lý căng thẳng của hậu kiểm số (Linh = 15 ngày, mục 3.4) — Mình
-- [ ] Sửa lỗi thật; mỗi thay đổi ghi `DECISIONS.md` (ngày, quyết định, lý do, case liên quan); không chỉnh để case "đạt cho đẹp" — Mình
-- [ ] Chạy lại cả hai chế độ, commit kết quả cuối — Mình + **Bạn**
+- [x] Chạy `python -m eval.run_eval --mode gemini` trên máy, gửi lại `eval/results/gemini.*` — **Bạn** (mình chạy được bằng key trong `secrets.toml` của bạn)
+- [x] Xử lý căng thẳng của hậu kiểm số (Linh = 15 ngày, mục 3.4) — Mình
+- [x] Sửa lỗi thật; mỗi thay đổi ghi `DECISIONS.md` (ngày, quyết định, lý do, case liên quan); không chỉnh để case "đạt cho đẹp" — Mình
+- [x] Chạy lại cả hai chế độ, commit kết quả cuối — Mình + **Bạn**
 - [ ] Redeploy, thử chế độ Gemini trên bản online — **Bạn**
 
 **Xong khi:** TC01 và TC04 đạt ở cả hai chế độ; rò rỉ = 0 ở cả hai chế độ (gồm cả context gửi Gemini); TC12 không làm theo chỉ thị nhúng; `eval/results/` có kết quả cuối của cả hai chế độ.
 
 ### P8 — Tài liệu nộp bài
 Mục tiêu: mọi khẳng định trong bài nộp đều dẫn về kết quả kiểm thử thật.
-- [ ] `docs/TEST_REPORT.md` theo format Kỳ vọng → Kết quả thực tế → Đạt/Chưa đạt → Điều học được
-- [ ] Chốt câu trả lời cho câu hỏi 3 dựa trên case thất bại thật (mục 10.1)
-- [ ] README tiếng Anh theo mục 8, trả lời 3 câu hỏi bắt buộc (câu 2 lấy từ `DECISIONS.md`)
-- [ ] `docs/VIDEO_SCRIPT.md` theo mục 10.2, phần 3:00–4:00 dùng case thất bại thật
-- [ ] Commit local, báo bạn push
+- [x] `docs/TEST_REPORT.md` theo format Kỳ vọng → Kết quả thực tế → Đạt/Chưa đạt → Điều học được
+- [x] Chốt câu trả lời cho câu hỏi 3 dựa trên case thất bại thật (mục 10.1)
+- [x] README tiếng Anh theo mục 8, trả lời 3 câu hỏi bắt buộc (câu 2 lấy từ `DECISIONS.md`)
+- [x] `docs/VIDEO_SCRIPT.md` theo mục 10.2, phần 3:00–4:00 dùng case thất bại thật
+- [x] Báo bạn phần đã thay đổi để bạn commit, push
 
 **Xong khi:** `TEST_REPORT.md` có ≥ 1 case đạt tốt, ≥ 1 khó/không rõ, ≥ 1 thất bại; README có link demo và trả lời đủ 3 câu hỏi bằng bằng chứng từ test.
 
@@ -474,7 +474,7 @@ Mục tiêu: nộp bài mà bạn bảo vệ được từng quyết định khi
 
 **Xong khi:** mọi mục trong Definition of done bên dưới đã được tick.
 
-**Cách chuyển code:** mình code và commit local ngay trong thư mục repo trên máy bạn; bạn tự thêm remote và push lên GitHub. Mình không push.
+**Cách chuyển code:** mình chỉ sửa file trong thư mục repo trên máy bạn, **không commit, không push**; bạn tự chọn phần nào được commit và tự push (đổi ngày 14/10/2026).
 
 **Lưu ý môi trường:** mình chạy trực tiếp trên máy bạn. Chưa có key thì mình kiểm thử đầy đủ ở chế độ trích nguyên văn. Khi bạn đã đặt key vào `.streamlit/secrets.toml` hoặc biến môi trường, mình cũng chạy được eval Gemini ở P7.
 
@@ -506,4 +506,4 @@ Mục tiêu: nộp bài mà bạn bảo vệ được từng quyết định khi
 1. Persona và tên tổ chức hư cấu (mục 5): **giữ nguyên**.
 2. Dùng BM25 thay cho embedding trong MVP: **đồng ý**.
 3. Danh sách test case (mục 6.2): **giữ nguyên, không thêm bớt**.
-4. Chuyển code: **mình code thẳng trong thư mục repo trên máy bạn** (commit local theo kế hoạch); **bạn tự push lên GitHub**. Không dùng file zip.
+4. Chuyển code: **mình code thẳng trong thư mục repo trên máy bạn**; **bạn tự commit và push lên GitHub** (từ 14/10/2026 mình không commit). Không dùng file zip.
