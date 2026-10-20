@@ -1,5 +1,7 @@
 # Cây tổ chức giả lập. Toàn bộ tên đều hư cấu.
 # `parent` khai báo tường minh vì GROUP không nằm trong đường dẫn id của công ty con.
+# `aliases`: cách gọi đơn vị trong câu hỏi (so khớp sau khi bỏ dấu). Chỉ khai báo cách gọi không
+# nhầm lẫn giữa các công ty — "phòng nhân sự" có ở cả hai công ty nên không phải alias.
 units:
   - id: GROUP
     parent: null
@@ -9,14 +11,17 @@ units:
     parent: GROUP
     name: Công ty A (fintech)
     short: Công ty A
+    aliases: [công ty a]
   - id: CO_A/ENG
     parent: CO_A
     name: Phòng Kỹ thuật
     short: Kỹ thuật
+    aliases: [phòng kỹ thuật, khối kỹ thuật]
   - id: CO_A/ENG/PLATFORM
     parent: CO_A/ENG
     name: Nhóm Platform
     short: Platform
+    aliases: [nhóm platform, team platform, platform]
   - id: CO_A/HR
     parent: CO_A
     name: Phòng Nhân sự
@@ -29,11 +34,14 @@ units:
     parent: GROUP
     name: Công ty B (game)
     short: Công ty B
+    aliases: [công ty b]
   - id: CO_B/MKT
     parent: CO_B
     name: Phòng Marketing
     short: Marketing
+    aliases: [phòng marketing]
   - id: CO_B/GAME
     parent: CO_B
     name: Phòng Sản xuất game
     short: Sản xuất game
+    aliases: [phòng sản xuất game, sản xuất game]

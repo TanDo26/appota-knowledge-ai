@@ -1,4 +1,60 @@
-# Kịch bản video (≤ 5 phút)
+# Kịch bản video Mission 3 — Cải tiến (≤ 5 phút)
+
+Đề yêu cầu: *Yêu cầu mới → Quyết định → Before/After → Kết quả → Giới hạn*. Không demo lại toàn bộ sản phẩm.
+
+**Chuẩn bị trước khi quay**
+- Mở link app trước 1–2 phút (Streamlit Cloud ngủ khi lâu không dùng). Ngày tra cứu để mặc định.
+- Mở sẵn trên GitHub: `MISSION3.md` (bảng "Quyết định") và `eval/results/m3/before_after.md`.
+- Bật **Dùng Gemini** cho phần kiểm chứng (2:50); nếu Gemini hết hạn mức, app tự hiện trích nguyên văn — cứ quay tiếp.
+- Nếu câu trả lời trên màn hình khác kịch bản: nói đúng những gì màn hình hiện.
+
+## 0:00–0:40 · Yêu cầu mới và chẩn đoán
+
+**Màn hình:** `MISSION3.md`, bảng "M2 hỏng ở đâu".
+
+> "Mission 3 thêm năm yêu cầu: phiên bản và thời điểm hiệu lực, quyền theo bối cảnh, mâu thuẫn giữa các cấp, nói rõ khi thiếu căn cứ, và cho người dùng kiểm chứng nguồn. Trước khi sửa gì, mình viết câu hỏi theo đúng năm yêu cầu và chạy trên code Mission 2. Kết quả: hỏi 'năm 2025 tôi được bao nhiêu ngày phép' thì bị từ chối, vì '2025' bị coi là một từ lạ; còn đặt ngày tra cứu về giữa 2025 thì trả **sai**: 12 ngày của Tập đoàn thay vì 13 ngày của Công ty A năm đó. HR hỏi về nhân sự thử việc, trưởng phòng hỏi về nhóm con — đều bị từ chối."
+
+## 0:40–1:30 · Quyết định: làm gì, không làm gì
+
+**Màn hình:** `MISSION3.md`, bảng "Quyết định".
+
+> "Các lỗi đó cùng một gốc: Mission 2 coi người hỏi vừa là người *được xem*, vừa là người *được áp dụng*, vào *hôm nay*. Thay đổi lớn nhất của Mission 3 là tách ba thứ: **ai hỏi** quyết định quyền xem; **hỏi về ai** quyết định phạm vi; **hỏi về lúc nào** quyết định phiên bản. Quyền luôn tính theo người hỏi, nên tra cứu cho người khác chỉ thu hẹp, không bao giờ mở rộng những gì họ thấy.
+> Ba thay đổi nhỏ hơn: hỏi lại khi căn cứ chỉ là vài âm tiết khớp ngẫu nhiên; báo mâu thuẫn khi cấp dưới thấp hơn mức sàn cấp trên; và cho xem nguyên văn, lịch sử phiên bản, nguồn bị loại.
+> Mình **chủ động không** thêm tìm kiếm ngữ nghĩa: nó sửa được từ chối nhầm, nhưng không nằm trong năm yêu cầu, buộc hiệu chỉnh lại ngưỡng và dễ gây hồi quy nhất."
+
+## 1:30–2:50 · Before → After trên app
+
+**1:30 — Thời điểm.** Tab *Hỏi đáp*, persona **Linh**, câu "Năm 2025 tôi được bao nhiêu ngày phép?" → **Hỏi**.
+
+> "Mission 2 từ chối câu này. Bây giờ: dòng đầu nói rõ đang tính theo tài liệu hiệu lực ngày 01/01/2025, trả 13 ngày từ phiên bản 2 đã lưu trữ, và ghi chú hôm nay đang áp dụng phiên bản 3 — 14 ngày. Hỏi năm 2027 thì bản nháp 16 ngày không bao giờ được dùng."
+
+**1:55 — Đối tượng và quyền.** Tab *So sánh 2 persona*: trái **Hoa**, phải **Minh**, câu "Phụ cấp trực on-call của nhóm Platform là bao nhiêu?" → **So sánh**. Sau đó đổi câu: "Số điện thoại trực của nhóm Platform là gì?", trái **Hoa**, phải **Linh**.
+
+> "Hoa là trưởng phòng, được *xem* tài liệu này nên nay được trả lời, kèm dòng 'không áp dụng cho bạn'. Minh ở công ty khác vẫn bị từ chối. Danh bạ trực chỉ nhóm Platform được xem: Hoa tra cứu nhóm Platform vẫn bị từ chối, Linh trong nhóm thì thấy — tra cứu không mở rộng quyền."
+
+**2:25 — Thiếu căn cứ và mâu thuẫn.** *Hỏi đáp*, **Linh**: "Tuần này tôi không lên công ty vài ngày được không?". Rồi persona **Quân**: "Tôi được bao nhiêu ngày phép năm?".
+
+> "Mission 2 trả lời câu đầu bằng thủ tục xin nghỉ, chỉ vì chữ 'lên' khớp 'trở lên'. Giờ hệ thống nói nó chưa đủ căn cứ, chỉ ra các từ đã khớp và hỏi lại. Với Quân: quy định phòng ghi 10 ngày, thấp hơn mức sàn 12 ngày của Tập đoàn — trước đây chỉ linter biết, câu trả lời vẫn đưa 10. Giờ là mâu thuẫn, hiện cả hai, nêu lý do."
+
+**2:50 — Kiểm chứng.** Bật **Dùng Gemini**, Linh hỏi "Phép năm chưa dùng có được chuyển sang năm sau không?". Mở *Nguyên văn đã dùng*, *Lịch sử phiên bản*, *Nguồn đã xem xét nhưng không dùng*.
+
+> "Gemini viết lại câu trả lời, nhưng người dùng mở được đúng đoạn văn bản đã gửi cho model, mã nội dung để đối chiếu, các phiên bản của tài liệu, và FAQ bị loại vì sao."
+
+## 3:20–4:10 · Kết quả
+
+**Màn hình:** `eval/results/m3/before_after.md` (hoặc tab *Kiểm thử*, mục Trước/sau).
+
+> "Cùng dữ liệu, cùng bộ kiểm, chỉ khác code: bộ Mission 3 từ 11 lên 25 trên 25 lượt; tính riêng hành vi — bỏ các thông tin Mission 2 vốn không xuất ra — là 15 lên 25. Không hồi quy: bộ Mission 2 vẫn 13 trên 13, trừ TC11 đổi kỳ vọng có chủ đích; 12 trên 14 câu trả lời giống Mission 2 từng byte. 0 rò rỉ trên 174 lượt, gồm một tài liệu mật mới được cài riêng để tấn công tính năng tra cứu. Kỳ vọng được viết và chạy trên code cũ trước khi sửa — lần chạy đó được lưu lại."
+
+## 4:10–5:00 · Giới hạn
+
+**Màn hình:** `MISSION3.md`, mục "Giới hạn còn lại".
+
+> "Bằng chứng cho phần 'hỏi lại' còn mỏng: nó chỉ đổi đúng một câu trong bộ test. Hiểu thời điểm và đối tượng vẫn dựa trên luật và danh sách cách gọi, nên 'năm sau', 'bên game' chưa hiểu. Metadata sai thì vẫn trả lời sai một cách tự tin. Và nếu đưa cho người dùng thật ngày mai, việc đầu tiên không phải tính năng: danh tính hiện là ô chọn persona — phải nối SSO trước, rồi chạy thử nghiệm có ghi log và nút báo sai để đo lỗi trên câu hỏi thật. Change Request chưa được chỉ định; khi có sẽ thêm vào cùng bộ kiểm thử."
+
+---
+
+# Kịch bản video Mission 2 (đã nộp, giữ để tham khảo)
 
 **Chuẩn bị trước khi quay**
 - Mở link app trước 1–2 phút để đánh thức app (Streamlit Cloud ngủ khi lâu không dùng).

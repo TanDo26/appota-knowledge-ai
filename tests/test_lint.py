@@ -9,7 +9,9 @@ def codes(kb):
 
 def test_real_dataset_has_only_expected_warnings(kb):
     # A-EXP-01@2 names a v1 that was purged from the store; GRP-ANN-01 carries planted injections.
-    assert codes(kb) == {("supersedes_missing", "A-EXP-01@2"), ("injection", "GRP-ANN-01@1")}
+    # Mission 3 data: B-GAME-01 (10 days) is a planted breach of the group floor (12 days).
+    assert codes(kb) == {("supersedes_missing", "A-EXP-01@2"), ("injection", "GRP-ANN-01@1"),
+                         ("below_floor", "B-GAME-01@1")}
 
 
 def test_unknown_scope_unit(kb):

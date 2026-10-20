@@ -172,7 +172,11 @@ def parse_document(text: str, path: str = "<memory>") -> Doc:
 
 def load_org(path: Path) -> dict[str, Unit]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    return {u["id"]: Unit(id=u["id"], parent=u.get("parent"), name=u["name"], short=u["short"]) for u in data["units"]}
+    return {
+        u["id"]: Unit(id=u["id"], parent=u.get("parent"), name=u["name"], short=u["short"],
+                      aliases=tuple(u.get("aliases") or ()))
+        for u in data["units"]
+    }
 
 
 def load_users(path: Path) -> dict[str, User]:

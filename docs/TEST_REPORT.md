@@ -1,5 +1,7 @@
 # Báo cáo kiểm thử
 
+> **Mission 3:** báo cáo kiểm thử của phần cải tiến (bộ `eval/cases_m3.yaml`, hồi quy bộ Mission 2, trước/sau, từng case theo format Kỳ vọng → Kết quả → Đạt → Điều học được) nằm ở [`MISSION3.md`](../MISSION3.md) mục 2.5, 2.6 và 3. Kết quả chạy: [`eval/results/m3/`](../eval/results/m3/). Phần dưới đây là báo cáo Mission 2, giữ nguyên.
+
 Toàn bộ tổ chức, người và số liệu đều là giả lập. Kết quả ghi theo lần chạy thật; kỳ vọng trong `eval/cases.yaml` được viết trước khi có code và không sửa theo kết quả.
 
 ## Cách chạy và đọc
