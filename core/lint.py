@@ -35,6 +35,8 @@ def lint(kb: KnowledgeBase) -> list[LintWarning]:
             warn("missing_field", doc, f"Thiếu trường bắt buộc: {', '.join(missing)}")
         if doc.status == "active" and doc.effective_from is None:
             warn("missing_field", doc, "Tài liệu active nhưng thiếu effective_from")
+        if doc.status == "archived" and (doc.effective_from is None or doc.effective_to is None):
+            warn("missing_field", doc, "Tài liệu archived cần đủ effective_from và effective_to để tra cứu theo thời điểm")
         for name, value, allowed in (
             ("doc_type", doc.doc_type, DOC_TYPES),
             ("status", doc.status, STATUSES),

@@ -11,6 +11,8 @@ import re
 import unicodedata
 
 _TOKEN = re.compile(r"[a-z0-9]+")
+# Questions may carry "|" where something was cut out (a date, a stop phrase): no bigram forms across it.
+_QUERY_TOKEN = re.compile(r"[a-z0-9]+|\|")
 
 
 def fold(text: str) -> str:
@@ -79,7 +81,7 @@ def doc_terms(text: str) -> list[str]:
 
 def rewrite_query(question: str) -> str:
     """Folded question with synonyms mapped to document wording and generic phrases removed."""
-    q = " ".join(syllables(question))
+    q = " ".join(_QUERY_TOKEN.findall(fold(question)))
     for pattern, canonical in _SYNONYMS:
         q = pattern.sub(canonical, q)
     for pattern in _STOP_PHRASES:

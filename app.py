@@ -1,4 +1,4 @@
-"""Streamlit UI — Tri thức nội bộ (MVP). Run: streamlit run app.py"""
+"""Streamlit UI — Tri thức nội bộ (Mission 3). Run: streamlit run app.py"""
 from __future__ import annotations
 
 from datetime import date
@@ -14,6 +14,7 @@ from core.models import (
     ABSTAIN,
     ANSWERED,
     ANSWERED_WITH_NOTE,
+    CLARIFY,
     CONFLICT,
     EMPLOYMENT_LABELS,
     OUT_OF_SCOPE,
@@ -22,15 +23,16 @@ from core.models import (
     User,
 )
 from core.pipeline import ask
-from eval.run_eval import load_cases, metrics, run_cases, run_leak_matrix
+from eval.run_eval import RESULTS, load_cases, metrics, run_cases, run_leak_matrix, run_question
 
-st.set_page_config(page_title="Tri thức nội bộ — MVP", page_icon="📚", layout="wide")
+st.set_page_config(page_title="Tri thức nội bộ — Mission 3", page_icon="📚", layout="wide")
 
 STATUS_UI = {
     ANSWERED: ("green", "Đã trả lời"),
     ANSWERED_WITH_NOTE: ("blue", "Trả lời kèm ghi chú"),
     CONFLICT: ("orange", "Mâu thuẫn — không tự chọn"),
     ABSTAIN: ("gray", "Từ chối — không đủ căn cứ"),
+    CLARIFY: ("red", "Chưa đủ căn cứ — cần hỏi rõ hơn"),
     OUT_OF_SCOPE: ("violet", "Ngoài phạm vi kho tài liệu"),
 }
 
@@ -80,8 +82,12 @@ def get_lint():
 
 @st.cache_data
 def sample_questions() -> list[str]:
-    cfg = load_cases()
-    return list(dict.fromkeys(c["question"] for c in cfg["cases"]))
+    """Mission 3 questions first, then Mission 2."""
+    questions = []
+    for suite in ("m3", "m2"):
+        cfg = load_cases(suite)
+        questions += [run_question(c, r) for c in cfg["cases"] for r in c["runs"]]
+    return list(dict.fromkeys(questions))
 
 
 kb = get_kb()
@@ -132,12 +138,24 @@ def render_result(result: Result, asker: User) -> None:
     color, label = STATUS_UI[result.status]
     st.caption(f"Đang trả lời cho: **{persona_line(asker)}**")
     st.markdown(f":{color}-background[**{label}**] `{result.status}`")
+    if result.context_lines and not result.answer.startswith("_"):
+        st.info("\n\n".join(result.context_lines), icon="🧭")
     if result.fallback and mode == "gemini":
         if result.quota_hit:
             st.warning("Gemini tạm hết hạn mức — đang hiện **trích nguyên văn** từ nguồn.", icon="⚠️")
         else:
             st.caption(f"Hiện trích nguyên văn thay cho câu trả lời của Gemini: {result.fallback}")
     st.markdown(result.answer)
+    ev = result.evidence or {}
+    if ev.get("matched") or ev.get("missing"):
+        st.caption(
+            "Căn cứ — từ trong câu hỏi có trong nguồn: " + (", ".join(f"“{w}”" for w in ev.get("matched", [])) or "—")
+            + (" · không có trong nguồn: " + ", ".join(f"“{w}”" for w in ev["missing"]) if ev.get("missing") else "")
+        )
+    for c in result.candidates:
+        with st.expander(f"Mục gần nhất (chưa chắc đúng): {c['heading']} — {c['title']} v{c['version']}"):
+            st.markdown(c["body"])
+            st.caption(f"`{c['section']}` · khớp: {', '.join(c['matched']) or '—'}")
     for note in result.notes:
         st.info(note, icon="📝")
     if result.contact:
@@ -146,7 +164,7 @@ def render_result(result: Result, asker: User) -> None:
         st.warning("Đã gắn cờ gửi chủ sở hữu tài liệu:\n\n" + "\n".join(
             f"- **{f.doc_key}** → {f.owner_team} ({f.owner_contact}): {f.message}" for f in result.flags), icon="🚩")
     if result.citations:
-        st.markdown("**Nguồn**")
+        st.markdown("**Nguồn** — bấm để xem nguyên văn đã dùng")
         for c in result.citations:
             with st.container(border=True):
                 st.markdown(f"**[{c.label}] {c.title}** · phiên bản {c.version} · mục {c.heading}")
@@ -154,6 +172,23 @@ def render_result(result: Result, asker: User) -> None:
                     f"{DOC_TYPE_LABELS.get(c.doc_type, c.doc_type)} · phạm vi {kb.unit_label(c.scope_unit)} · "
                     f"hiệu lực {fmt_date(c.effective_from)} → {fmt_date(c.effective_to)} · chủ sở hữu {c.owner_team} · `{c.section_id}`"
                 )
+                with st.expander("Nguyên văn đã dùng"):
+                    st.markdown(c.body)
+                    st.caption(f"Mã nội dung `{c.content_hash}` — đổi một chữ trong mục này thì mã đổi theo.")
+    if result.versions:
+        with st.expander("Lịch sử phiên bản của tài liệu được trích"):
+            st.dataframe(
+                [{"Phiên bản": v["doc_key"], "Trạng thái": v["status"], "Hiệu lực từ": v["effective_from"],
+                  "Đến": v["effective_to"], "Trong câu trả lời này": v["label"]} for v in result.versions],
+                hide_index=True, width="stretch",
+            )
+    if result.considered:
+        with st.expander(f"Nguồn đã xem xét nhưng không dùng ({len(result.considered)})"):
+            st.dataframe(
+                [{"Mục": c["section"], "Tài liệu": f"{c['title']} v{c['version']}", "Mục tên": c["heading"],
+                  "Vì sao không dùng": c["reason"]} for c in result.considered],
+                hide_index=True, width="stretch",
+            )
     render_trace(result)
 
 
@@ -162,7 +197,14 @@ def render_trace(result: Result) -> None:
     if t is None:
         return
     with st.expander("Trace — hệ thống đã làm gì"):
-        st.markdown(f"**1–2. Lọc cứng** (ngày tra cứu {fmt_date(t.as_of)}): còn **{t.candidate_sections}** mục ứng viên.")
+        q = result.query
+        if q is not None:
+            who = f"{EMPLOYMENT_LABELS.get(q.subject_employment, q.subject_employment)} · {kb.unit_label(q.subject_unit)}"
+            st.markdown(f"**1. Ngữ cảnh** — quyền xem: người hỏi · áp dụng cho: {who}"
+                        f"{' (tra cứu cho đối tượng khác)' if q.lookup else ''} · tính theo ngày {fmt_date(q.as_of)}")
+            if t.query_steps:
+                st.markdown("\n".join(f"- {s}" for s in t.query_steps))
+        st.markdown(f"**2. Lọc cứng** (ngày {fmt_date(t.as_of)}): còn **{t.candidate_sections}** mục ứng viên.")
         if t.excluded_counts:
             st.markdown("\n".join(f"- {REASON_LABELS.get(k, k)}: {v}" for k, v in t.excluded_counts.items()))
         if audit:
@@ -212,13 +254,20 @@ with tab_cmp:
                     render_result(answer(kb.users[uid], q2, as_of, mode), kb.users[uid])
 
 with tab_eval:
-    cfg = load_cases()
+    before_after = RESULTS / "before_after.md"
+    if before_after.exists():
+        with st.expander("Trước / sau: Mission 2 → Mission 3 (`eval/results/m3/before_after.md`)", expanded=True):
+            st.markdown(before_after.read_text(encoding="utf-8").split("\n## Bộ Mission 3, từng lượt")[0])
+    suite = st.radio("Bộ kiểm thử", ["m3", "m2"], horizontal=True,
+                     format_func={"m3": "Mission 3 — cải tiến (cases_m3.yaml)",
+                                  "m2": "Mission 2 — hồi quy (cases.yaml)"}.get)
+    cfg = load_cases(suite)
     st.markdown(
-        f"Chạy {len(cfg['cases'])} test case trong `eval/cases.yaml` (kỳ vọng viết trước khi code) và ma trận rò rỉ. "
-        f"Ngày tra cứu cố định: **{fmt_date(cfg['as_of'])}**."
+        f"Chạy {sum(len(c['runs']) for c in cfg['cases'])} lượt của {len(cfg['cases'])} case (kỳ vọng viết trước khi code) "
+        f"và ma trận rò rỉ. Ngày tra cứu mặc định: **{fmt_date(cfg['as_of'])}**."
     )
     st.caption("Nút dưới chạy chế độ trích nguyên văn để không tốn hạn mức Gemini. "
-               "Kết quả chế độ Gemini: chạy `python -m eval.run_eval --mode gemini`, xem `eval/results/gemini.md`.")
+               "Chế độ Gemini: `python -m eval.run_eval --mode gemini`.")
     if st.button("Chạy bộ kiểm thử (trích nguyên văn)", type="primary"):
         with st.spinner("Đang chạy..."):
             rows = run_cases(kb, cfg, "extractive")
@@ -231,10 +280,11 @@ with tab_eval:
         d.metric("Rò rỉ", m["leaks"], help=f"Trên {m['leak_runs']} lượt persona × câu hỏi")
         st.dataframe(
             [{
-                "Case": r["case"], "Loại": r["type"], "Persona": r["persona"],
+                "Case": r["case"], "Loại": r["type"], "Persona": r["persona"], "Câu hỏi": r["question"],
                 "Kỳ vọng": " / ".join(r["expect"].get("status", [])), "Thực tế": r["status"],
                 "Nguồn trích": ", ".join(r["cited"]) or "—",
-                "Kết quả": "Đạt" if r["passed"] else "Chưa đạt: " + "; ".join(r["failures"]),
+                "Kết quả": (f"Đổi kỳ vọng có chủ đích → {r['changed']}" if r.get("changed")
+                            else "Đạt" if r["passed"] else "Chưa đạt: " + "; ".join(r["failures"])),
             } for r in rows],
             hide_index=True, width="stretch",
         )
@@ -242,6 +292,8 @@ with tab_eval:
             st.error("Phát hiện rò rỉ:")
             st.dataframe(leak["leaks"], hide_index=True, width="stretch")
         st.caption("Đạt theo tiêu chí tự động chưa chắc đúng nội dung — xem `docs/TEST_REPORT.md` cho phần đọc từng câu trả lời.")
+        if m["changed_by_design"]:
+            st.caption(f"{m['changed_by_design']} lượt đổi kỳ vọng có chủ đích (không tính đạt/chưa đạt).")
 
 with tab_data:
     st.subheader("Cây tổ chức")

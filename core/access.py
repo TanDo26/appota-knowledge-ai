@@ -6,7 +6,14 @@ restricted document "matches your question". Two separate ideas (plan §4.3):
 - scope (`scope_unit`, `applies_to`): who the document APPLIES to
 - permission (`acl`, `sensitivity`): who may SEE it
 
-A document must pass both to become a candidate.
+A document must pass both to become a candidate. Since Mission 3 the two can be about different people:
+permission is always checked for the asker, applicability for the subject of the question (the asker
+unless the question names another unit or contract type, see core/context.py). A lookup can therefore
+only narrow what the asker sees, never widen it.
+
+Status and time (Mission 3): `draft` is never used. `archived` means "no longer in force", not "never
+was": an archived version is used for a lookup date inside its validity window (a question about 2025
+gets the 2025 policy), and needs `effective_to` for that (linted).
 """
 from __future__ import annotations
 
@@ -46,17 +53,24 @@ def can_view(kb: KnowledgeBase, user: User, doc: Doc) -> bool:
     return not doc.acl_roles or user.role in doc.acl_roles
 
 
-def in_scope(kb: KnowledgeBase, user: User, doc: Doc) -> bool:
-    """A document applies to the asker's own unit and every unit above it, never to siblings or children."""
-    return doc.scope_unit in ancestors_or_self(kb, user.unit)
+def in_scope(kb: KnowledgeBase, unit_id: str, doc: Doc) -> bool:
+    """A document applies to a unit and every unit above it, never to siblings or children."""
+    return doc.scope_unit in ancestors_or_self(kb, unit_id)
 
 
-def audience_ok(audience: tuple[str, ...], user: User) -> bool:
-    return not audience or user.employment_type in audience
+def audience_ok(audience: tuple[str, ...], employment_type: str) -> bool:
+    return not audience or employment_type in audience
+
+
+def status_ok(doc: Doc, as_of: date) -> bool:
+    """Active, or archived with `as_of` inside its (closed) validity window."""
+    if doc.status == "active":
+        return True
+    return doc.status == "archived" and doc.effective_to is not None and window_reason(doc, as_of) is None
 
 
 def in_effect(doc: Doc, as_of: date) -> bool:
-    return window_reason(doc, as_of) is None and doc.status == "active"
+    return status_ok(doc, as_of) and window_reason(doc, as_of) is None
 
 
 def window_reason(doc: Doc, as_of: date) -> str | None:
@@ -90,14 +104,15 @@ class FilterResult:
         return dict(c)
 
 
-def doc_reason(kb: KnowledgeBase, user: User, doc: Doc, as_of: date, superseded: set[str]) -> str | None:
+def doc_reason(kb: KnowledgeBase, user: User, doc: Doc, as_of: date, superseded: set[str],
+               unit: str | None = None, employment_type: str | None = None) -> str | None:
     if not can_view(kb, user, doc):
         return "acl"
-    if not in_scope(kb, user, doc):
+    if not in_scope(kb, unit or user.unit, doc):
         return "scope"
-    if not audience_ok(doc.applies_to, user):
+    if not audience_ok(doc.applies_to, employment_type or user.employment_type):
         return "audience"
-    if doc.status != "active":
+    if not status_ok(doc, as_of):
         return "status"
     reason = window_reason(doc, as_of)
     if reason:
@@ -107,18 +122,21 @@ def doc_reason(kb: KnowledgeBase, user: User, doc: Doc, as_of: date, superseded:
     return None
 
 
-def filter_for(kb: KnowledgeBase, user: User, as_of: date) -> FilterResult:
+def filter_for(kb: KnowledgeBase, user: User, as_of: date,
+               unit: str | None = None, employment_type: str | None = None) -> FilterResult:
+    """Sections `user` may see that apply to (`unit`, `employment_type`) — the asker by default — on `as_of`."""
     result = FilterResult()
     superseded = superseded_keys(kb.docs, as_of)
+    employment_type = employment_type or user.employment_type
     for doc in kb.docs:
-        reason = doc_reason(kb, user, doc, as_of, superseded)
+        reason = doc_reason(kb, user, doc, as_of, superseded, unit, employment_type)
         if reason is not None:
             result.excluded.append((doc.key, reason))
             if reason == "not_yet_effective":
                 result.upcoming.append(doc)
             continue
         for section in doc.sections:
-            if audience_ok(section.audience, user):
+            if audience_ok(section.audience, employment_type):
                 result.sections.append(section)
             else:
                 result.excluded_sections.append((section.id, "section_audience"))

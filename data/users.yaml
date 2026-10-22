@@ -42,3 +42,11 @@ users:
     employment_type: probation
     seniority_years: 0
     location: TP. Hồ Chí Minh
+  - id: quan
+    name: Quân
+    title: Lập trình viên game
+    unit: CO_B/GAME
+    role: employee
+    employment_type: full_time
+    seniority_years: 2
+    location: TP. Hồ Chí Minh

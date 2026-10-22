@@ -18,6 +18,8 @@ ANSWERED_WITH_NOTE = "ANSWERED_WITH_NOTE"
 CONFLICT = "CONFLICT"
 ABSTAIN = "ABSTAIN"
 OUT_OF_SCOPE = "OUT_OF_SCOPE"
+# Mission 3: something matched, but only on scattered syllables, so the system asks instead of answering.
+CLARIFY = "CLARIFY"
 
 
 @dataclass(frozen=True)
@@ -26,6 +28,7 @@ class Unit:
     parent: str | None
     name: str
     short: str
+    aliases: tuple[str, ...] = ()  # how questions name the unit ("nhóm platform"), unambiguous across companies
 
 
 @dataclass(frozen=True)
@@ -105,6 +108,33 @@ class Citation:
     effective_from: date | None
     effective_to: date | None
     owner_team: str
+    # Verbatim text the answer was built from (also what the LLM received) and a short fingerprint of it,
+    # so a reader can check the exact wording even when Gemini rewrote the answer.
+    body: str = ""
+    content_hash: str = ""
+
+
+@dataclass
+class QueryContext:
+    """What the question is about, kept apart from who asks it (Mission 3).
+
+    Permission always comes from the asker. Applicability (unit, contract type) comes from the subject,
+    which is the asker unless the question names someone else. Validity comes from `as_of`, which is the
+    lookup date unless the question names a date or a year.
+    """
+    as_of: date
+    base_date: date  # the lookup date chosen in the UI (or today); "now" for notes about changes
+    time_phrase: str | None = None  # wording in the question that set `as_of`
+    time_ambiguous: bool = False  # several dates named: answered for `base_date`
+    subject_unit: str = ""
+    subject_employment: str = ""
+    lookup: bool = False  # the answer is about someone other than the asker
+    subject_phrases: tuple[str, ...] = ()
+    other_company: bool = False  # the question names a unit of another company: not answered
+
+    @property
+    def shifted(self) -> bool:
+        return self.as_of != self.base_date
 
 
 @dataclass
@@ -132,6 +162,7 @@ class Trace:
     resolver_steps: list[str] = field(default_factory=list)
     answer_mode: str = "extractive"
     postcheck: list[str] = field(default_factory=list)
+    query_steps: list[str] = field(default_factory=list)  # Mission 3: how time and subject were read
     # Auditor-only ("Chế độ kiểm định"): which documents were excluded and why.
     excluded_docs: list[tuple[str, str]] = field(default_factory=list)
     excluded_sections: list[tuple[str, str]] = field(default_factory=list)
@@ -151,6 +182,14 @@ class Result:
     # Set when Gemini was requested but the extractive text was shown instead (and why).
     fallback: str | None = None
     quota_hit: bool = False
+    # Mission 3
+    query: QueryContext | None = None
+    context_lines: list[str] = field(default_factory=list)  # shown above the answer: time / subject / lookup
+    conflict_reasons: list[str] = field(default_factory=list)  # why CONFLICT, in plain words
+    evidence: dict = field(default_factory=dict)  # question words found / not found in the cited text
+    candidates: list[dict] = field(default_factory=list)  # CLARIFY: nearest sections, not an answer
+    considered: list[dict] = field(default_factory=list)  # visible sources on the topic that were not used, and why
+    versions: list[dict] = field(default_factory=list)  # version history of each cited document the asker may see
 
     def public_view(self) -> dict:
         """Everything a normal (non-auditor) user can see. Used by the UI and the leak matrix."""
@@ -164,6 +203,13 @@ class Result:
             "contact": self.contact,
             "fallback": self.fallback,
             "context": [{"id": s.id, "heading": s.heading, "body": s.body} for s in self.context_sections],
+            "query": None if self.query is None else self.query.__dict__,
+            "context_lines": list(self.context_lines),
+            "conflict_reasons": list(self.conflict_reasons),
+            "evidence": self.evidence,
+            "candidates": self.candidates,
+            "considered": self.considered,
+            "versions": self.versions,
             "trace": None if t is None else {
                 "excluded_counts": t.excluded_counts,
                 "candidate_sections": t.candidate_sections,
@@ -174,5 +220,6 @@ class Result:
                 "resolver_steps": t.resolver_steps,
                 "answer_mode": t.answer_mode,
                 "postcheck": t.postcheck,
+                "query_steps": t.query_steps,
             },
         }

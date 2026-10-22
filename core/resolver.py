@@ -8,7 +8,9 @@ Rules, in order:
   R3 doc type  - policy > procedure > guideline > faq = announcement; lower types leave the answer
                  and are flagged to their owner if their figures disagree with the final answer
   R4 org level - the most specific unit wins (override / floor); a `supplement` child is merged
-                 with its parent, child first
+                 with its parent, child first. Mission 3: if the winning child states a figure below a
+                 parent `floor`, that is a CONFLICT too (the check compares first figures only, so the
+                 system shows both instead of deciding which one is valid)
   R5 conflict  - two or more documents left at the same level: same figures -> consensus,
                  different figures -> CONFLICT (the system does not choose)
 """
@@ -19,7 +21,7 @@ from dataclasses import dataclass, field
 
 from core.loader import KnowledgeBase
 from core.models import EMPLOYMENT_LABELS, Section, User
-from core.numbers import extract_numbers
+from core.numbers import extract_numbers, first_number
 
 TYPE_RANK = {"policy": 0, "procedure": 1, "guideline": 2, "faq": 3, "announcement": 3}
 
@@ -34,6 +36,7 @@ class Deviation:
 class Resolution:
     winners: list[Section] = field(default_factory=list)
     conflict: bool = False
+    conflict_reasons: list[str] = field(default_factory=list)  # plain-language, shown to the asker
     dropped: list[tuple[Section, str]] = field(default_factory=list)
     deviations: list[Deviation] = field(default_factory=list)
     steps: list[str] = field(default_factory=list)
@@ -51,7 +54,9 @@ def _ids(sections: list[Section]) -> str:
     return ", ".join(s.id for s in sections)
 
 
-def resolve(candidates: list[Section], kb: KnowledgeBase, user: User) -> Resolution:
+def resolve(candidates: list[Section], kb: KnowledgeBase, user: User, employment_type: str | None = None) -> Resolution:
+    """`employment_type` is the contract type the answer is about (the asker's unless the question names another)."""
+    employment_type = employment_type or user.employment_type
     res = Resolution()
     pool = list(candidates)
     if len(pool) <= 1:
@@ -85,7 +90,7 @@ def resolve(candidates: list[Section], kb: KnowledgeBase, user: User) -> Resolut
         general = [s for s in secs if not s.targeted]
         if targeted and general:
             drop(general, "R2 có mục dành riêng cho đối tượng của người hỏi")
-            label = EMPLOYMENT_LABELS.get(user.employment_type, user.employment_type)
+            label = EMPLOYMENT_LABELS.get(employment_type, employment_type)
             res.steps.append(f"R2 Đối tượng: {key} có mục riêng cho {label} ({_ids(targeted)}), bỏ mục chung {_ids(general)}.")
 
     # R3 — document type
@@ -112,17 +117,35 @@ def resolve(candidates: list[Section], kb: KnowledgeBase, user: User) -> Resolut
         else:
             break
     outranked = [s for s in pool if depth(s) not in selected]
+    breached: list[Section] = []
     if outranked:
         specific = [s for s in pool if depth(s) == selected[-1]]
         floors = [s for s in outranked if s.doc.precedence == "floor"]
+        for floor in floors:
+            minimum = first_number(floor.body)
+            if minimum is None:
+                continue
+            for s in (s for s in pool if s not in outranked):
+                value = first_number(s.body)
+                if value is not None and value < minimum:
+                    breached.append(floor)
+                    res.conflict = True
+                    res.steps.append(f"R4 Dưới mức sàn: {s.id} ghi {value:g}, thấp hơn mức sàn {minimum:g} của "
+                                     f"{floor.id}. Không tự kết luận bên nào đúng.")
+                    res.conflict_reasons.append(
+                        f"{s.doc.title} ghi {value:g}, thấp hơn mức sàn {minimum:g} trong {floor.doc.title} "
+                        "(cấp trên quy định cấp dưới không được thấp hơn). Hệ thống không tự kết luận bên nào đúng.")
+                    break
         how = "cấp cha chỉ đặt mức sàn" if floors else "cấp cụ thể hơn ghi đè"
-        drop(outranked, "R4 cấp tổ chức cao hơn")
-        res.steps.append(f"R4 Cấp tổ chức: {specific[0].doc.scope_unit} thắng ({how}), bỏ {_ids(outranked)}.")
+        dropped = [s for s in outranked if s not in breached]
+        if dropped:
+            drop(dropped, "R4 cấp tổ chức cao hơn")
+            res.steps.append(f"R4 Cấp tổ chức: {specific[0].doc.scope_unit} thắng ({how}), bỏ {_ids(dropped)}.")
     pool.sort(key=lambda s: (-depth(s), s.doc.key, s.number))
 
     # R5 — same level, different documents
     for level in selected:
-        at_level = [s for s in pool if depth(s) == level]
+        at_level = [s for s in pool if depth(s) == level and s not in breached]
         per_doc: dict[str, list[Section]] = defaultdict(list)
         for s in at_level:
             per_doc[s.doc.key].append(s)
@@ -135,12 +158,18 @@ def resolve(candidates: list[Section], kb: KnowledgeBase, user: User) -> Resolut
         else:
             res.conflict = True
             res.steps.append(f"R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu ({summary}). Không tự chọn.")
+            res.conflict_reasons.append("Các tài liệu cùng cấp, cùng loại nhưng ghi số liệu khác nhau; "
+                                        "không có luật nào để chọn một bên.")
 
     res.winners = pool
 
-    # Lower-ranked sources that state figures the final answer does not contain are flagged.
+    # Lower-ranked sources that state figures the final answer does not contain are flagged. A general
+    # section is not compared with an answer made only of sections targeted at another contract type:
+    # they are about different people (Mission 3: a probation lookup flagged the full-time FAQ).
     answer_figures = _numbers(pool)
     for s in lower:
+        if not s.targeted and pool and all(w.targeted for w in pool):
+            continue
         extra = extract_numbers(s.body) - answer_figures
         if extra:
             res.deviations.append(Deviation(s, extra))

@@ -6,6 +6,7 @@ JSON with citations and runs a post-check; any failure falls back to the extract
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from datetime import date
@@ -13,6 +14,7 @@ from datetime import date
 from core.llm import LLMError
 from core.models import (
     ABSTAIN,
+    CLARIFY,
     CONFLICT,
     EMPLOYMENT_LABELS,
     OUT_OF_SCOPE,
@@ -42,6 +44,11 @@ def fmt_date(d: date | None) -> str:
     return d.strftime("%d/%m/%Y") if d else "—"
 
 
+def content_hash(text: str) -> str:
+    """Short fingerprint of a section's text, to check later that a document was not edited since."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+
+
 def make_citations(sections: list[Section]) -> list[Citation]:
     return [
         Citation(
@@ -56,6 +63,8 @@ def make_citations(sections: list[Section]) -> list[Citation]:
             effective_from=s.doc.effective_from,
             effective_to=s.doc.effective_to,
             owner_team=s.doc.owner_team,
+            body=s.body,
+            content_hash=content_hash(s.body),
         )
         for i, s in enumerate(sections, start=1)
     ]
@@ -69,16 +78,41 @@ def _quote(body: str) -> str:
     return "\n".join(f"> {line}" if line.strip() else ">" for line in body.split("\n"))
 
 
+def with_context(result: Result, text: str) -> str:
+    """Time / subject lines go INTO the answer text, so no rewrite can drop "this does not apply to you"."""
+    if not result.context_lines:
+        return text
+    return "\n".join(f"_{line}_" for line in result.context_lines) + "\n\n" + text
+
+
+def clarify_text(evidence: dict, candidates: list[dict]) -> str:
+    found = ", ".join(f"“{w}”" for w in evidence.get("matched", [])) or "—"
+    missing = evidence.get("missing", [])
+    lines = [
+        "Mình **chưa đủ căn cứ** để trả lời: câu hỏi chỉ khớp với tài liệu ở vài từ rời rạc "
+        f"({found}), không khớp cụm từ nào"
+        + (f" và không tìm thấy {', '.join(f'“{w}”' for w in missing)}" if missing else "")
+        + ". Mình không đoán ý bạn.",
+        "",
+        "Bạn hỏi lại cụ thể hơn, hoặc tự xem các mục gần nhất dưới đây — **chưa chắc là câu trả lời**:",
+    ]
+    for c in candidates:
+        lines.append(f"- {c['heading']} — {c['title']} (phiên bản {c['version']}) · khớp: {', '.join(c['matched']) or '—'}")
+    return "\n".join(lines)
+
+
 def extractive_answer(result: Result) -> str:
     """Verbatim text of the winning sections. `result` must already carry status, citations and context."""
-    if result.status == ABSTAIN:
-        return result.answer  # already the generic refusal
-    blocks = [f"{source_header(c)}\n{_quote(s.body)}" for c, s in zip(result.citations, result.context_sections)]
+    if result.status in (ABSTAIN, CLARIFY):
+        return result.answer  # already the generic refusal / the clarification request
+    blocks = [f"{source_header(c)}\n{_quote(c.body)}" for c in result.citations]
     if result.status == CONFLICT:
         owners = sorted({f.owner_team for f in result.flags})
-        return (
+        reasons = "".join(f"\n\nLý do: {r}" for r in result.conflict_reasons)
+        return with_context(result,
             "Các tài liệu đang hiệu lực nói khác nhau về vấn đề này. Hệ thống **không tự chọn** bên nào:\n\n"
             + "\n\n".join(blocks)
+            + reasons
             + f"\n\nĐã báo mâu thuẫn cho chủ sở hữu tài liệu: {', '.join(owners)}. "
             "Trong lúc chờ, bạn nên hỏi trực tiếp các đơn vị này trước khi làm theo."
         )
@@ -87,7 +121,7 @@ def extractive_answer(result: Result) -> str:
         if not blocks:
             return prefix
         return f"{prefix}\n\n**Quy định áp dụng cho bạn:**\n\n" + "\n\n".join(blocks)
-    return "\n\n".join(blocks)
+    return with_context(result, "\n\n".join(blocks))
 
 
 # ---------------------------------------------------------------- Gemini mode (plan §3.4)
@@ -99,6 +133,7 @@ SYSTEM_PROMPT = """Bạn là trợ lý tra cứu quy định nội bộ của m�
 4. Không đưa ra con số nào không có trong nguồn hoặc trong hồ sơ người hỏi.
 5. Nếu các nguồn không đủ để trả lời câu hỏi, đặt "insufficient": true và để "answer" rỗng.
 6. Trả lời ngắn gọn bằng tiếng Việt, xưng "bạn" với người hỏi.
+7. Nếu có thẻ <context>: trả lời đúng thời điểm và đối tượng ghi trong đó. Khi đối tượng không phải người hỏi, nói rõ quy định này dành cho ai, không viết như thể nó áp dụng cho người hỏi.
 Chỉ trả về JSON đúng dạng: {"answer": "...", "citations": ["S1"], "insufficient": false}"""
 
 _LABEL = re.compile(r"\[(S\d+)\]")
@@ -116,20 +151,25 @@ def build_prompt(result: Result, user: User, unit_label: str, question: str) -> 
         f"Thâm niên: {user.seniority_years} năm"
     )
     parts = [f"<asker>{_escape(profile)}</asker>"]
-    for c, s in zip(result.citations, result.context_sections):
+    if result.context_lines:
+        parts.append(f"<context>{_escape(' '.join(result.context_lines))}</context>")
+    for c in result.citations:
         parts.append(
             f'<source id="{c.label}" title="{_escape(c.title)}" version="{c.version}" section="{_escape(c.heading)}" '
-            f'doc_type="{c.doc_type}" effective_from="{fmt_date(c.effective_from)}">\n{_escape(s.body)}\n</source>'
+            f'doc_type="{c.doc_type}" effective_from="{fmt_date(c.effective_from)}">\n{_escape(c.body)}\n</source>'
         )
     parts.append(f"<question>{_escape(question)}</question>")
     return "\n\n".join(parts)
 
 
-def allowed_numbers(sections: list[Section], user: User) -> set[str]:
-    """Figures the answer may state: those in the cited sources (dates also by day/month/year) and the profile."""
+def allowed_numbers(bodies: list[str], user: User, dates: tuple[date, ...] = ()) -> set[str]:
+    """Figures the answer may state: those in the cited sources (dates also by day/month/year), the profile,
+    and the date the question asked about (Mission 3: "năm 2025, bạn được 13 ngày")."""
     allowed = {str(user.seniority_years)}
-    for s in sections:
-        for n in extract_numbers(s.body):
+    for d in dates:
+        allowed |= {str(d.year), str(d.month), str(d.day), f"{d.day}/{d.month}", f"{d.day}/{d.month}/{d.year}"}
+    for body in bodies:
+        for n in extract_numbers(body):
             allowed.add(n)
             if "/" in n:
                 allowed.update(n.split("/"))
@@ -157,8 +197,10 @@ def postcheck(raw: str, result: Result, user: User) -> tuple[dict | None, list[s
     unknown = sorted(set(cited + inline) - provided)
     if unknown:
         problems.append(f"Kiểm 1 — trích nguồn không được cung cấp: {', '.join(unknown)}")
-    used = [s for c, s in zip(result.citations, result.context_sections) if c.label in set(cited + inline)]
-    extra = sorted(extract_numbers(data.get("answer", "")) - allowed_numbers(used, user))
+    used = [c.body for c in result.citations if c.label in set(cited + inline)]
+    q = result.query
+    dates = (q.as_of,) if q is not None and q.shifted else ()
+    extra = sorted(extract_numbers(data.get("answer", "")) - allowed_numbers(used, user, dates))
     if extra:
         problems.append(f"Kiểm 2 — số không có trong nguồn được trích hoặc hồ sơ: {', '.join(extra)}")
     return data, problems
@@ -182,10 +224,11 @@ def gemini_answer(result: Result, user: User, unit_label: str, question: str, ll
         result.answer = ABSTAIN_TEXT
         result.citations = []
         result.notes = []
+        result.considered, result.versions, result.evidence = [], [], {}
         return result
     keep = set(str(x) for x in data.get("citations") or []) | set(_LABEL.findall(data["answer"]))
     result.citations = [c for c in result.citations if c.label in keep]
-    result.answer = data["answer"].strip()
+    result.answer = with_context(result, data["answer"].strip())
     trace.answer_mode = "gemini"
     trace.postcheck.append(
         f"Model {getattr(llm, 'model', '?')} · hậu kiểm đạt: nguồn trích hợp lệ, mọi con số có trong nguồn hoặc hồ sơ"

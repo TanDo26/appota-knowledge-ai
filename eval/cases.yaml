@@ -162,6 +162,9 @@ cases:
       CO_A/ENG) nhưng tài liệu không ÁP DỤNG cho Hoa (phạm vi là CO_A/ENG/PLATFORM). Theo luật
       phạm vi hiện tại, kỳ vọng là ABSTAIN và không dùng A-PLT-01. Câu hỏi mở về nghiệp vụ:
       quản lý cấp cha hỏi về chính sách của nhóm con thì có nên được trả lời không?
+    # Mission 3 trả lời câu hỏi mở này (docs/DECISIONS.md, 20/10/2026): kỳ vọng mới ở cases_m3.yaml.
+    # Kỳ vọng cũ giữ nguyên bên dưới; lượt này được báo cáo là "đổi có chủ đích", không tính đạt/chưa đạt.
+    changed_in_m3: "M3-06 — được xem thì được tra cứu, ghi rõ không áp dụng cho người hỏi"
     runs:
       - persona: hoa
         expect:
