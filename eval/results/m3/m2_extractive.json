@@ -2,8 +2,8 @@
   "suite": "m2",
   "mode": "extractive",
   "model": null,
-  "run_at": "2026-10-20 20:09",
-  "commit": "d40d1df-dirty",
+  "run_at": "2026-10-22 21:47",
+  "commit": "4e212b5-dirty",
   "as_of": "2026-10-15",
   "metrics": {
     "runs_passed": "13/13",
@@ -30,7 +30,9 @@
     "gemini_answers": 0,
     "fallbacks": 0,
     "leaks": 0,
-    "leak_runs": 96
+    "leak_runs": 96,
+    "interference": 0,
+    "interference_runs": 160
   },
   "rows": [
     {
@@ -67,7 +69,7 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 8.87 > leave.unpaid 4.69 > leave.carry_over 4.13 > leave.request 3.91.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.40 > leave.unpaid 4.98 > leave.carry_over 4.38 > leave.request 4.15.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
         "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
@@ -156,7 +158,7 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.98 > leave.unpaid 5.07 > leave.carry_over 4.64 > leave.request 4.41.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 10.77 > leave.unpaid 5.44 > leave.carry_over 5.00 > leave.request 4.76.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
         "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
@@ -203,7 +205,7 @@
       "coverage": 1.0,
       "topic": "remote.days_per_week",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 23.31 > remote.request 19.87.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 24.34 > remote.request 20.74.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -278,8 +280,8 @@
       "coverage": 1.0,
       "topic": "salary.band",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.80.",
-        "Chỉ có 1 nguồn, không cần phân xử."
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.09.",
+        "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-02@1#2."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -327,7 +329,7 @@
       "coverage": 1.0,
       "topic": "leave.carry_over",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 65.28.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 67.01.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#2.",
         "R3 Lệch: A-FAQ-01@1#2 ghi 5, khác nguồn thắng → gắn cờ cho chủ sở hữu."
       ],
@@ -375,7 +377,7 @@
       "coverage": 1.0,
       "topic": "expense.claim_deadline",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 40.84.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 42.31.",
         "R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu (A-EXP-01@2: 30; A-EXP-02@1: 15). Không tự chọn."
       ],
       "postcheck": [],
@@ -407,10 +409,10 @@
       "flags": [],
       "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.104,
+      "coverage": 0.106,
       "topic": null,
       "resolver_steps": [
-        "Độ phủ câu hỏi 0.10 < ngưỡng 0.59: không có mục đủ liên quan."
+        "Độ phủ câu hỏi 0.11 < ngưỡng 0.59: không có mục đủ liên quan."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -450,7 +452,7 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 12.72 > leave.carry_over 8.03.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 13.64 > leave.carry_over 8.62.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
         "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
@@ -531,10 +533,10 @@
       "flags": [],
       "contact": null,
       "answer": "[S1] Chính sách làm việc từ xa — phiên bản 2, mục 1. Số ngày làm việc từ xa, hiệu lực từ 01/07/2026\n> Nhân sự được làm việc từ xa tối đa 2 ngày mỗi tuần khi quản lý trực tiếp đồng ý. Không làm việc từ xa vào thứ Hai vì có họp giao ban.",
-      "coverage": 0.744,
+      "coverage": 0.748,
       "topic": "remote.days_per_week",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 21.38 > remote.request 18.36.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 22.25 > remote.request 19.11.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -572,7 +574,7 @@
       "coverage": 1.0,
       "topic": "oncall.allowance",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 31.70 > oncall.compensatory 18.61.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 32.69 > oncall.compensatory 19.25.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -617,10 +619,10 @@
       "flags": [],
       "contact": null,
       "answer": "[S1] Thông báo hệ thống chấm công mới — phiên bản 1, mục 1. Thay đổi hệ thống chấm công, hiệu lực từ 01/10/2026\n> Từ ngày 01/11/2026, toàn Tập đoàn chuyển từ máy chấm công vân tay sang ứng dụng chấm công ChamCong Go (tên giả lập). Nhân sự cài ứng dụng từ cổng phần mềm nội bộ và đăng nhập bằng tài khoản email công ty.\n\n[S2] Thông báo hệ thống chấm công mới — phiên bản 1, mục 2. Cách chấm công trên ứng dụng, hiệu lực từ 01/10/2026\n> Bấm \"Check-in\" khi đến và \"Check-out\" khi về trên ứng dụng, trong lúc điện thoại đang kết nối wifi văn phòng. Quên chấm công thì gửi giải trình trên ứng dụng trong vòng 3 ngày làm việc; quá hạn sẽ tính là nghỉ không phép.",
-      "coverage": 0.754,
+      "coverage": 0.752,
       "topic": "attendance.system",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 46.75."
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 47.17."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -635,6 +637,10 @@
     "runs": 96,
     "questions": 16,
     "personas": 6,
-    "leaks": []
+    "leaks": [],
+    "interference": {
+      "runs": 160,
+      "diffs": []
+    }
   }
 }

@@ -1,23 +1,26 @@
 # Trước / sau: Mission 2 → Mission 3
 
-Chạy lúc 2026-10-20 20:09. Cùng dữ liệu (`data/` hiện tại), cùng bộ kiểm (`eval/run_eval.py`), chế độ trích nguyên văn.
+Chạy lúc 2026-10-22 21:48. Cùng dữ liệu (`data/` hiện tại), cùng bộ kiểm (`eval/run_eval.py`), chế độ trích nguyên văn.
 Code "trước" = `core/` của commit `d40d1df` (Mission 2). Code "sau" = `core/` hiện tại.
 
 ## Tổng hợp
 
-| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Đúng trạng thái | Từ chối nhầm | Rò rỉ |
-|---|---|---|---|---|---|---|
-| Mission 3 (mới) | M2 | **11/25** | 15/25 | 16/25 | 6 | 0 / 174 |
-| Mission 3 (mới) | M3 | **25/25** | 25/25 | 25/25 | 0 | 0 / 174 |
-| Mission 2 (hồi quy) | M2 | **13/13** (+1 đổi có chủ đích) | 13/13 | 13/13 | 0 | 0 / 96 |
-| Mission 2 (hồi quy) | M3 | **13/13** (+1 đổi có chủ đích) | 13/13 | 13/13 | 0 | 0 / 96 |
+| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Đúng trạng thái | Từ chối nhầm | Rò rỉ | Giao thoa** |
+|---|---|---|---|---|---|---|---|
+| Mission 3 (mới) | M2 | **13/29** | 18/29 | 19/29 | 7 | 0 / 186 | 0 / 465 |
+| Mission 3 (mới) | M3 | **28/29** | 28/29 | 28/29 | 1 | 0 / 186 | 0 / 465 |
+| Mission 2 (hồi quy) | M2 | **13/13** (+1 đổi có chủ đích) | 13/13 | 13/13 | 0 | 0 / 96 | 0 / 160 |
+| Mission 2 (hồi quy) | M3 | **13/13** (+1 đổi có chủ đích) | 13/13 | 13/13 | 0 | 0 / 96 | 0 / 160 |
 
 \* *Hành vi đúng*: mọi kỳ vọng về trạng thái, nguồn, nội dung câu trả lời/ghi chú và cờ; bỏ qua các kỳ vọng về thông tin Mission 2 không hề xuất ra (ngày tính, tra cứu cho ai, nguyên văn, lịch sử phiên bản, nguồn đã xem xét). Cột này tách "trả lời sai" khỏi "không báo thông tin".
+
+\*\* *Giao thoa* (Change Request B2): số lượt mà một tài liệu giới hạn làm thay đổi bất cứ thứ gì người không được xem nó nhìn thấy (so với kho không có tài liệu đó).
 
 Theo yêu cầu cải tiến (bộ Mission 3):
 
 | Yêu cầu | Code M2: đạt · hành vi đúng | Code M3: đạt · hành vi đúng |
 |---|---|---|
+| CR B2 Khác quyền truy cập | 2/4 · 3/4 | 3/4 · 3/4 |
 | R1 Phiên bản & thời điểm | 0/5 · 1/5 | 5/5 · 5/5 |
 | R2 Quyền theo bối cảnh | 5/9 · 6/9 | 9/9 · 9/9 |
 | R3 Mâu thuẫn giữa các cấp | 1/2 · 1/2 | 2/2 · 2/2 |
@@ -53,6 +56,10 @@ Theo yêu cầu cải tiến (bộ Mission 3):
 | M3-10 | R3 | Cải tiến | nam | Tôi được bao nhiêu ngày phép năm? | Đạt · `ANSWERED` | Đạt · `ANSWERED` |
 | M3-11 | R5 | Cải tiến | linh | Phép năm chưa dùng có được chuyển sang năm sau không? | Chưa đạt (hành vi đúng, thiếu thông tin) · `ANSWERED_WITH_NOTE` | Đạt · `ANSWERED_WITH_NOTE` |
 | M3-11 | R5 | Cải tiến | linh | Hạn nộp hồ sơ hoàn ứng là bao lâu? | Chưa đạt (hành vi đúng, thiếu thông tin) · `CONFLICT` | Đạt · `CONFLICT` |
+| CR-01 | CR | Change Request | tuan | Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu? | Chưa đạt (hành vi đúng, thiếu thông tin) · `ANSWERED` | Đạt · `ANSWERED` |
+| CR-01 | CR | Change Request | linh | Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu? | Đạt · `ANSWERED` | Đạt · `ANSWERED` |
+| CR-01 | CR | Change Request | tuan | Khung lương kỹ sư bậc 2 là bao nhiêu? | Đạt · `ANSWERED` | Đạt · `ANSWERED` |
+| CR-01 | CR | Change Request | linh | Khung lương kỹ sư bậc 2 là bao nhiêu? | Chưa đạt · `ABSTAIN` | Chưa đạt · `ABSTAIN` |
 
 ### Vì sao code M2 chưa đạt
 
@@ -70,10 +77,12 @@ Theo yêu cầu cải tiến (bộ Mission 3):
 - **M3-10 · quan** — trạng thái ANSWERED, kỳ vọng CONFLICT; thiếu nguồn GRP-HR-01@2; không gắn cờ B-GAME-01@1; không gắn cờ GRP-HR-01@2
 - **M3-11 · linh** — không liệt kê A-FAQ-01@1#2 trong nguồn đã xem xét; lịch sử phiên bản thiếu A-LEAVE-01@2; A-LEAVE-01@3#2 thiếu nguyên văn hoặc mã nội dung
 - **M3-11 · linh** — A-EXP-01@2#2 thiếu nguyên văn hoặc mã nội dung; A-EXP-02@1#2 thiếu nguyên văn hoặc mã nội dung
+- **CR-01 · tuan** — không liệt kê A-FAQ-02@1#1 trong nguồn đã xem xét
+- **CR-01 · linh** — trạng thái ABSTAIN, kỳ vọng ANSWERED / ANSWERED_WITH_NOTE; thiếu mục A-FAQ-02@1#2
 
 ### Code M3 còn chưa đạt
 
-Không có.
+- **CR-01 · linh** — trạng thái ABSTAIN, kỳ vọng ANSWERED / ANSWERED_WITH_NOTE; thiếu mục A-FAQ-02@1#2
 
 ## Bộ Mission 2 (hồi quy): các lượt có kết quả khác nhau
 

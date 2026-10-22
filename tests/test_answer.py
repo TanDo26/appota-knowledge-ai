@@ -43,6 +43,20 @@ def test_check1_unknown_citation_falls_back(kb):
     assert "> Nhân sự được làm việc từ xa" in r.answer  # verbatim text shown instead
 
 
+def test_check1_any_bracketed_tag_must_be_a_provided_source(kb):
+    """Gemini run of 22/10/2026: the model cited the <context> block as "[context]" in the visible answer."""
+    r, _ = run(kb, {"answer": "Tối đa 2 ngày mỗi tuần [S1]. Quy định này áp dụng cho bạn [context].",
+                    "citations": ["S1"], "insufficient": False})
+    assert r.fallback and "Kiểm 1" in r.fallback and "context" in r.fallback
+    assert "[context]" not in r.answer
+
+
+def test_check1_accepts_grouped_labels(kb):
+    r, _ = run(kb, {"answer": "Bạn được làm việc từ xa tối đa 2 ngày mỗi tuần [S1, S1].", "citations": ["S1"],
+                    "insufficient": False})
+    assert r.fallback is None
+
+
 def test_check2_number_not_in_source_falls_back(kb):
     r, _ = run(kb, {"answer": "Bạn được làm việc từ xa tối đa 4 ngày mỗi tuần [S1].", "citations": ["S1"], "insufficient": False})
     assert r.fallback and "Kiểm 2" in r.fallback and "4" in r.fallback

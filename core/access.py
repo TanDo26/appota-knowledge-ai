@@ -126,7 +126,9 @@ def filter_for(kb: KnowledgeBase, user: User, as_of: date,
                unit: str | None = None, employment_type: str | None = None) -> FilterResult:
     """Sections `user` may see that apply to (`unit`, `employment_type`) — the asker by default — on `as_of`."""
     result = FilterResult()
-    superseded = superseded_keys(kb.docs, as_of)
+    # Only versions the asker may see can retire another one: a hidden new version must not change what the
+    # asker is shown, or the change itself reveals that it exists (Change Request B2; linted as visibility_gap).
+    superseded = superseded_keys([d for d in kb.docs if can_view(kb, user, d)], as_of)
     employment_type = employment_type or user.employment_type
     for doc in kb.docs:
         reason = doc_reason(kb, user, doc, as_of, superseded, unit, employment_type)

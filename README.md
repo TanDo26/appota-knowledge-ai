@@ -11,7 +11,7 @@ An assistant that answers questions about internal policies **for a specific per
 
 ## Mission 3 — what changed and why
 
-Full report (Vietnamese): **[MISSION3.md](MISSION3.md)** — Before → problem → decision → after → evidence → remaining limits, the test suite, and the three mandatory answers. Decision log: [docs/DECISIONS.md](docs/DECISIONS.md#mission-3--cải-tiến-20102026). Change Request: none assigned yet (20/10/2026).
+Full report (Vietnamese): **[MISSION3.md](MISSION3.md)** — Before → problem → decision → after → evidence → remaining limits, the test suite, the Change Request, and the three mandatory answers. Change Request: **B2 — different access** (assigned 22/10/2026), [below](#change-request-b2--different-access) and in [MISSION3.md §4](MISSION3.md#4-change-request-b2--khác-quyền-truy-cập).
 
 **Diagnosis first.** Before changing anything, questions written for the five new requirements were run against the Mission 2 code. Every question that is not *"what applies to me, today"* broke: a question about 2025 was refused (the year counted as an unknown word); setting the lookup date to mid-2025 returned the **wrong figure** (the group floor, 12 days, instead of Company A's 2025 policy, 13 days — archived versions were dropped even inside their validity window); a manager asking about a sub-team, or HR asking about probation staff, were refused.
 
@@ -33,17 +33,27 @@ Smaller changes: a new `CLARIFY` state when the top match is only scattered syll
 
 | Suite | Mission 2 code | Mission 3 code |
 |---|---|---|
-| Mission 3 suite, 25 runs ([cases_m3.yaml](eval/cases_m3.yaml)) | 11/25 (behaviour\* 15/25) | **25/25** (25/25) |
+| Mission 3 suite, 25 improvement runs ([cases_m3.yaml](eval/cases_m3.yaml)) | 11/25 (behaviour\* 15/25) | **25/25** (25/25) |
+| Change Request B2, 4 runs (CR-01) | 2/4 (3/4) | **3/4** (3/4) |
 | Mission 2 suite, 14 runs — regression | 13/13 + 1 changed by design | **13/13** + 1 changed by design |
-| Leaks (canary + restricted doc IDs in any public field) | 0 / 174 | **0 / 174** |
+| Leaks (canary + restricted doc IDs in any public field) | 0 / 186 | **0 / 186** |
+| Non-interference (a restricted document changes nothing a non-viewer sees) | 0 / 465 | **0 / 465** |
 
 \* behaviour = status, sources, answer/note content and flags, ignoring information Mission 2 never produced. Per requirement (behaviour): versions & time 1/5 → 5/5, access by context 6/9 → 9/9, cross-level conflicts 1/2 → 2/2, insufficient evidence 5/7 → 7/7, verification 2/2 → 2/2 (verification adds capability, not a behaviour fix). 12 of the 14 Mission 2 answers are byte-identical; the abstain-threshold calibration is unchanged (17/18) and the new rule flips 0/18 decisions. Expectations were written and run on the old code before `core/` was touched ([run 0](eval/results/m3/run0_before_core_changes.md)). Details: [before_after.md](eval/results/m3/before_after.md).
 
 **Still failing, from real runs:** the `CLARIFY` rule changed exactly one case in the suite (thin evidence); a coincidental *phrase* match still passes ("Khi nào tôi được ký hợp đồng chính thức?" → probation-leave section); the wrong section can still win inside one document ("khung lương khối kỹ thuật" → salary-review section); time/subject understanding is rule-based (no "năm sau", no informal unit names); metadata is trusted; identity is a persona dropdown — SSO is a prerequisite for real users, not an option.
 
+### Change Request B2 — different access
+
+*Two users ask the same question, but one may not see the document that holds the full answer.* New data: a salary FAQ every Company A employee can read ([A-FAQ-02](data/docs/A-FAQ-02_v1.md)) holds part of the answer (raises are reviewed in April); the restricted salary policy (HR only) holds the rest (at most 15%). HR gets the full answer from the policy; an engineer gets exactly the FAQ part.
+
+**Decision:** everything a non-viewer sees must be **identical to what they would see if the restricted document did not exist**. The system never says "there is more you may not see" — that sentence alone reveals a restricted document on the topic (the same reason Mission 2 uses one refusal for "no data" and "no permission"). Where to ask for more is for the owner to publish in a document people can see (A-FAQ-02 §2); a visible source that *contradicts* a hidden one cannot be flagged to the asker, so it is flagged to the owners at publish time.
+
+**Run 0 before any code change:** the Mission 2 filter-before-search design already met the requirement on the real data (0 differences). Reading the code found a channel the data did not exercise: a restricted new version retired the public old version for everyone, so a non-viewer's answer changed because of a document they cannot see. Changes: only versions the asker may see can supersede (`core/access.py`); a `visibility_gap` lint rule (`core/lint.py`); a `same_as_without` expectation and a **non-interference matrix** in the checker — for each restricted document × each persona who may not see it × every question, run with and without the document and compare every public field. Still failing (kept, not re-written): the engineer asking for the "level 2" band gets the generic refusal instead of the FAQ's pointer (coverage 0.44 < 0.59).
+
 ### Mandatory questions (Mission 3)
 
-1. **What did you prioritise, and what did you deliberately not do?** Separating *who asks* from *about whom* and *about when*, because the diagnosis showed it was the common root of the worst failures (versions & time, access by context). Then: ask instead of answering on thin evidence, conflict on floor breaches, verbatim sources. Not done: semantic search, cross-company lookups, relative dates, non-numeric conflicts — reasons above and in [MISSION3.md §2.3](MISSION3.md#23-quyết-định-thay-đổi-gì-không-thay-đổi-gì).
+1. **What did you prioritise, and what did you deliberately not do?** Separating *who asks* from *about whom* and *about when*, because the diagnosis showed it was the common root of the worst failures (versions & time, access by context). Then: ask instead of answering on thin evidence, conflict on floor breaches, verbatim sources. Not done: semantic search, cross-company lookups, relative dates, non-numeric conflicts — reasons above and in [MISSION3.md §2.3](MISSION3.md#23-quyết-định-thay-đổi-gì-không-thay-đổi-gì). For the Change Request: prove non-interference, close the supersedes channel, warn owners; deliberately not done: telling the asker that more exists.
 2. **Which change made the biggest difference, and what is the evidence?** The query context. Behaviour on the time and access requirements went from 1/5 and 6/9 to 5/5 and 9/9 on the same suite, data and checker, with no regression on the Mission 2 suite and 0 leaks including a document planted to attack the new lookup. Caveat: the suite is self-written; the stronger evidence is each specific Mission 2 failure with its cause, plus the unchanged regression and calibration results.
 3. **Biggest remaining risk if real users get it tomorrow, and what first?** Prerequisite: real identity (SSO + HR master data) — today anyone can pick the HR persona. After that: confident wrong answers where the code cannot tell (coincidental phrase matches, wrong section, wrong metadata), at a rate the self-written suite cannot measure. First: a measured pilot with one company (feedback button, logged traces), the metadata linter as a publishing gate, then semantic retrieval behind the existing access filter, calibrated on the logged real questions.
 
@@ -79,7 +89,7 @@ pip install -r requirements.txt
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml   # optional: add GEMINI_API_KEY
 streamlit run app.py
 
-pytest                                         # 118 unit tests (83 from Mission 2)
+pytest                                         # 130 unit tests (83 from Mission 2, 7 for the Change Request)
 python -m eval.run_eval                        # Mission 3 suite, no key needed → eval/results/m3/m3_extractive.md
 python -m eval.run_eval --suite m2             # Mission 2 suite = regression → eval/results/m3/m2_extractive.md
 python -m eval.run_eval --mode gemini          # needs GEMINI_API_KEY → eval/results/m3/m3_gemini.md
@@ -105,16 +115,15 @@ Quota protection on the public app: answers are cached per (persona, question, d
 ```
 app.py                Streamlit UI (Vietnamese): Q&A, two-persona comparison, test runner, data catalogue
 core/                 loader · lint · context · access · text · retrieval · resolver · pipeline · answer · llm · numbers · models
-data/                 org.yaml (with unit aliases) · users.yaml · contacts.yaml · docs/*.md (21 documents with front-matter)
+data/                 org.yaml (with unit aliases) · users.yaml · contacts.yaml · docs/*.md (22 documents with front-matter)
 eval/                 cases.yaml (Mission 2) · cases_m3.yaml · calibration.yaml · run_eval.py · compare.py · calibrate.py · results/
-tests/                pytest unit tests (test_context.py, test_m3.py are new in Mission 3)
-docs/                 implement_plan.md · DECISIONS.md · TEST_REPORT.md · VIDEO_SCRIPT.md
+tests/                pytest unit tests (test_context.py, test_m3.py, test_change_request.py are new in Mission 3)
 MISSION3.md           Mission 3 report (Vietnamese)
 ```
 
 ## Known limitations
 
-Identity is a persona dropdown (SSO is a prerequisite for real users); single-turn only; one topic per question (broad questions get one aspect); lexical retrieval (false refusals on different wording, coincidental phrase matches still answered); time and subject are read by rules (absolute years/dates and declared unit aliases only; a year is evaluated on 1 January); no cross-company lookups; no personal records (remaining leave is redirected to HR); conflict detection compares figures only; the injection filter is a regex list; the free Gemini tier is shared and may be slow or exhausted.
+Identity is a persona dropdown (SSO is a prerequisite for real users); single-turn only; one topic per question (broad questions get one aspect); lexical retrieval (false refusals on different wording, coincidental phrase matches still answered); time and subject are read by rules (absolute years/dates and declared unit aliases only; a year is evaluated on 1 January; a day or month without a year is not guessed — the answer says which date it holds for and how to ask with a year); no cross-company lookups; no personal records (remaining leave is redirected to HR); conflict detection compares figures only; the injection filter is a regex list; the free Gemini tier is shared and may be slow or exhausted.
 
 ---
 
@@ -136,7 +145,7 @@ Plain RAG finds documents that are *relevant*. It does not know which one *appli
 | Leaks (80 persona × question runs) | 0 | 0 |
 | Correct refusals / wrong refusals | 3/3 · 0 | 3/3 · 0 |
 
-The headline number hides the interesting part, which is in [docs/TEST_REPORT.md](docs/TEST_REPORT.md): the first run passed every automated check while answering TC02 from the wrong section, and an out-of-suite paraphrase is still answered **confidently on a coincidental word match**.
+The headline number hides the interesting part: the first run passed every automated check while answering TC02 from the wrong section, and an out-of-suite paraphrase is still answered **confidently on a coincidental word match**.
 
 ### Mandatory questions (Mission 2)
 
@@ -146,7 +155,7 @@ The **applicability engine that runs before the LLM**: hard filtering by permiss
 
 #### 2. What changed from Mission 1, and why?
 
-Full log with dates and reasons: [docs/DECISIONS.md](docs/DECISIONS.md). The main changes:
+The main changes:
 
 | Mission 1 | Mission 2 | Why |
 |---|---|---|

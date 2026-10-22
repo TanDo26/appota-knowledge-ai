@@ -127,6 +127,33 @@ def run_question(case: dict, run: dict) -> str:
     return run.get("question") or case["question"]
 
 
+def kb_without(kb, keys):
+    """The same knowledge base as if these documents had never been written (non-interference baseline)."""
+    drop = set(keys)
+    return type(kb)(org=kb.org, users=kb.users, docs=[d for d in kb.docs if d.key not in drop], contacts=kb.contacts)
+
+
+def _comparable(result) -> dict:
+    return json.loads(json.dumps(result.public_view(), ensure_ascii=False, default=str))
+
+
+def public_diff(full, without, removed: int) -> list[str]:
+    """Fields a user sees that differ between the full knowledge base and the one without `removed` hidden documents.
+
+    The only expected difference is the question-independent total of documents hidden from the user (the
+    "Không có quyền xem" count), which must drop by exactly the number of documents removed. Answers that stop
+    before the filter (a question about another company) have no counts on either side.
+    """
+    a, b = _comparable(full), _comparable(without)
+    ta, tb = a.pop("trace", None) or {}, b.pop("trace", None) or {}
+    diff = [k for k in a if a[k] != b.get(k)]
+    ca, cb = ta.pop("excluded_counts", {}), tb.pop("excluded_counts", {})
+    if (ca or cb) and (ca.pop("acl", 0) - removed != cb.pop("acl", 0) or ca != cb):
+        diff.append("trace.excluded_counts")
+    diff += [f"trace.{k}" for k in ta if ta[k] != tb.get(k)]
+    return diff
+
+
 def cached_ask(ask, kb, user, question: str, as_of: date, mode: str, llm, memo: dict | None):
     """One pipeline run per (persona, question, date), shared by the cases and the leak matrix (saves LLM quota)."""
     if memo is None:
@@ -153,8 +180,16 @@ def run_cases(kb, cfg: dict, mode: str, llm=None, memo: dict | None = None) -> l
             question = run_question(case, run)
             as_of = run.get("as_of", cfg["as_of"])
             result = cached_ask(ask, kb, user, question, as_of, mode, llm, memo)
-            fails = check(result, run["expect"], kb) + [f"lớp nạp không gắn cờ injection cho {k}" for k in missing_ingest]
+            interference = []
+            if keys := run["expect"].get("same_as_without"):
+                plain = result if mode == "extractive" else ask(kb, user, question, as_of=as_of)
+                fields = public_diff(plain, ask(kb_without(kb, keys), user, question, as_of=as_of), len(keys))
+                if fields:
+                    interference.append(f"khác kết quả khi kho không có {', '.join(keys)}: {', '.join(fields)}")
+            fails = (check(result, run["expect"], kb) + interference
+                     + [f"lớp nạp không gắn cờ injection cho {k}" for k in missing_ingest])
             behaviour = not check(result, {k: v for k, v in run["expect"].items() if k not in FIELD_KEYS}, kb)
+            behaviour = behaviour and not interference
             t = result.trace
             query = _query(result)
             rows.append({
@@ -205,7 +240,33 @@ def run_leak_matrix(kb, cfg: dict, mode: str, llm=None, memo: dict | None = None
                     for marker in (r["canary"], r["doc"]):
                         if marker in blob:
                             leaks.append({"persona": user.id, "question": q, "doc": r["doc"], "marker": marker, "field": field})
-    return {"runs": runs, "questions": len(questions), "personas": len(kb.users), "leaks": leaks}
+    return {"runs": runs, "questions": len(questions), "personas": len(kb.users), "leaks": leaks,
+            "interference": run_noninterference(kb, cfg, questions)}
+
+
+def run_noninterference(kb, cfg: dict, questions: list[str]) -> dict:
+    """Change Request B2: a restricted document must not change ANYTHING a person who may not see it is shown.
+
+    Stronger than looking for IDs and canaries: a paraphrased figure, a different status, a missing source or
+    an extra note would all reveal that a hidden document exists. Extractive mode only (deterministic, no quota).
+    """
+    ask = _ask()
+    full: dict = {}
+    diffs, runs = [], 0
+    for r in cfg["leak_matrix"]["restricted"]:
+        keys = [d.key for d in kb.docs if d.id == r["doc"]]
+        other = kb_without(kb, keys)
+        for user in kb.users.values():
+            if user.id in r["allowed_personas"]:
+                continue
+            for q in questions:
+                runs += 1
+                if (user.id, q) not in full:
+                    full[(user.id, q)] = ask(kb, user, q, as_of=cfg["as_of"])
+                fields = public_diff(full[(user.id, q)], ask(other, user, q, as_of=cfg["as_of"]), len(keys))
+                if fields:
+                    diffs.append({"persona": user.id, "question": q, "doc": r["doc"], "fields": fields})
+    return {"runs": runs, "diffs": diffs}
 
 
 def metrics(rows: list[dict], leak: dict) -> dict:
@@ -227,6 +288,7 @@ def metrics(rows: list[dict], leak: dict) -> dict:
     got_abstain = [r for r in want_abstain if r["status"] == ABSTAIN]
     false_abstain = [r for r in scored if r["status"] == ABSTAIN and ABSTAIN not in r["expect"].get("status", [])]
     cases = list(dict.fromkeys(r["case"] for r in scored))
+    interference = leak.get("interference") or {"runs": 0, "diffs": []}
     return {
         "runs_passed": f"{sum(r['passed'] for r in scored)}/{len(scored)}",
         "behaviour_passed": f"{sum(r['behaviour_passed'] for r in scored)}/{len(scored)}",
@@ -243,6 +305,8 @@ def metrics(rows: list[dict], leak: dict) -> dict:
         "fallbacks": sum(1 for r in rows if r.get("fallback")),
         "leaks": len(leak["leaks"]),
         "leak_runs": leak["runs"],
+        "interference": len(interference["diffs"]),
+        "interference_runs": interference["runs"],
     }
 
 
@@ -273,6 +337,8 @@ def to_markdown(title: str, mode: str, cfg: dict, rows: list[dict], leak: dict, 
         f"- Đúng trạng thái: {m['status_accuracy']} · nguồn kỳ vọng nằm trong nguồn trích: {m['source_accuracy']}",
         f"- Từ chối đúng: {m['correct_abstain']} · từ chối nhầm: {m['false_abstain']}",
         f"- Ma trận rò rỉ: **{m['leaks']} rò rỉ** trên {m['leak_runs']} lượt ({leak['personas']} persona × {leak['questions']} câu hỏi)",
+        f"- Không giao thoa (Change Request B2): **{m['interference']} khác biệt** trên {m['interference_runs']} lượt "
+        "(người không có quyền × câu hỏi, có và không có tài liệu giới hạn trong kho)",
         f"- Câu trả lời do Gemini viết: {m['gemini_answers']} · rơi về trích nguyên văn: {m['fallbacks']}",
         "- Theo loại: " + " · ".join(f"{t} {v}" for t, v in m["pass_rate_by_type"].items()),
     ]
@@ -298,6 +364,16 @@ def to_markdown(title: str, mode: str, cfg: dict, rows: list[dict], leak: dict, 
         out.append("Không phát hiện ID tài liệu giới hạn hay canary token nào trong bất kỳ trường công khai nào "
                    "(context, nguồn trích, câu trả lời, ghi chú, cờ, đầu mối, trace, ngữ cảnh truy vấn, nguồn đã xem xét, "
                    "lịch sử phiên bản, gợi ý) của persona không có quyền.")
+    diffs = (leak.get("interference") or {}).get("diffs", [])
+    out += ["", "## Không giao thoa", "",
+            "Với mỗi tài liệu giới hạn và mỗi persona không được xem nó: chạy mọi câu hỏi trên kho đầy đủ và trên kho "
+            "bỏ tài liệu đó, so sánh mọi thứ persona thấy. Chỉ được phép khác tổng số tài liệu bị ẩn (giảm đúng số "
+            "tài liệu đã bỏ).", ""]
+    if diffs:
+        out += ["| Persona | Câu hỏi | Tài liệu | Trường khác |", "|---|---|---|---|"]
+        out += [f"| {x['persona']} | {x['question']} | {x['doc']} | {', '.join(x['fields'])} |" for x in diffs]
+    else:
+        out.append("Không có khác biệt nào.")
     out += ["", "## Chi tiết", ""]
     for r in rows:
         out += [

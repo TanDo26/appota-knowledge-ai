@@ -137,6 +137,9 @@ SYSTEM_PROMPT = """Bạn là trợ lý tra cứu quy định nội bộ của m�
 Chỉ trả về JSON đúng dạng: {"answer": "...", "citations": ["S1"], "insufficient": false}"""
 
 _LABEL = re.compile(r"\[(S\d+)\]")
+# Any short bracketed tag in the answer is read as a citation ("[S1, S2]" is two). The model once cited the
+# <context> block as "[context]" in the text the user sees (Gemini run of 22/10/2026).
+_TAG = re.compile(r"\[([^\[\]\n]{1,40})\]")
 
 
 def _escape(text: str) -> str:
@@ -189,12 +192,13 @@ def postcheck(raw: str, result: Result, user: User) -> tuple[dict | None, list[s
     provided = {c.label for c in result.citations}
     cited = [str(x) for x in data.get("citations") or []]
     inline = _LABEL.findall(data.get("answer", ""))
+    tags = [t for tag in _TAG.findall(data.get("answer", "")) for t in re.split(r"[,;\s]+", tag.strip()) if t]
     problems = []
     if not data.get("answer", "").strip():
         problems.append("Câu trả lời rỗng")
     if not cited and not inline:
         problems.append("Không trích nguồn nào")
-    unknown = sorted(set(cited + inline) - provided)
+    unknown = sorted(set(cited + tags) - provided)
     if unknown:
         problems.append(f"Kiểm 1 — trích nguồn không được cung cấp: {', '.join(unknown)}")
     used = [c.body for c in result.citations if c.label in set(cited + inline)]

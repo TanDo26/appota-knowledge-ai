@@ -2,9 +2,9 @@
 
 > Toàn bộ tổ chức, người, tài liệu và số liệu đều là **giả lập**.
 
-Tiếp tục trên sản phẩm Mission 2 (commit `d40d1df`), không làm lại. Nhật ký quyết định chi tiết: [`docs/DECISIONS.md`](docs/DECISIONS.md) (phần Mission 3). Bảng trước/sau sinh tự động: [`eval/results/m3/before_after.md`](eval/results/m3/before_after.md).
+Tiếp tục trên sản phẩm Mission 2 (commit `d40d1df`), không làm lại. Quyết định và lý do nằm ngay trong báo cáo này (mục 2.3 và 4). Bảng trước/sau sinh tự động: [`eval/results/m3/before_after.md`](eval/results/m3/before_after.md).
 
-**Change Request:** chưa được chỉ định tại thời điểm viết (20/10/2026). Chỗ thêm case: cuối [`eval/cases_m3.yaml`](eval/cases_m3.yaml).
+**Change Request:** B2 — Khác quyền truy cập (nhận 22/10/2026), xem [mục 4](#4-change-request-b2--khác-quyền-truy-cập).
 
 ---
 
@@ -22,7 +22,9 @@ Thay đổi lớn nhất của Mission 3 là **tách ba thứ trước đây b�
 
 Kèm ba thay đổi nhỏ hơn: hỏi lại khi căn cứ chỉ là vài âm tiết khớp ngẫu nhiên; báo mâu thuẫn khi cấp dưới thấp hơn mức sàn cấp trên; cho người dùng xem nguyên văn, lịch sử phiên bản và nguồn bị loại.
 
-**Kết quả** (cùng dữ liệu, cùng bộ kiểm, chỉ khác code): bộ Mission 3 **11/25 → 25/25** lượt đạt (tính riêng hành vi: 15/25 → 25/25); bộ Mission 2 không hồi quy (13/13, 12/14 câu trả lời giống từng byte); **0 rò rỉ** trên 174 lượt.
+**Kết quả** (cùng dữ liệu, cùng bộ kiểm, chỉ khác code): phần cải tiến R1–R5 **11/25 → 25/25** lượt đạt (tính riêng hành vi: 15/25 → 25/25); bộ Mission 2 không hồi quy (13/13, 12/14 câu trả lời giống từng byte); **0 rò rỉ** trên 186 lượt.
+
+**Change Request B2** (mục 4): người không có quyền nhận đúng phần mình được xem, và mọi thứ họ thấy **giống hệt khi tài liệu mật không tồn tại** — 0 khác biệt trên 465 lượt kiểm. Đóng thêm một kênh lộ mà dữ liệu chưa chạm tới, và chuyển rủi ro còn lại sang chủ sở hữu tài liệu qua linter. CR-01 đạt 3/4; lượt chưa đạt được giữ nguyên và giải thích.
 
 ---
 
@@ -99,14 +101,15 @@ Ví dụ trước → sau (trích nguyên văn, ngày tra cứu 15/10/2026):
 
 **Cùng bộ kiểm, cùng dữ liệu, code M2 vs M3** (`python -m eval.compare`; `core/` của M2 lấy thẳng từ git):
 
-| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Từ chối nhầm | Rò rỉ |
-|---|---|---|---|---|---|
-| Mission 3 (25 lượt) | M2 | 11/25 | 15/25 | 6 | 0 / 174 |
-| Mission 3 (25 lượt) | **M3** | **25/25** | **25/25** | 0 | 0 / 174 |
-| Mission 2 (14 lượt) | M2 | 13/13 + 1 đổi có chủ đích | 13/13 | 0 | 0 / 96 |
-| Mission 2 (14 lượt) | **M3** | **13/13** + 1 đổi có chủ đích | 13/13 | 0 | 0 / 96 |
+| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Từ chối nhầm | Rò rỉ | Giao thoa** |
+|---|---|---|---|---|---|---|
+| Mission 3 (29 lượt = 25 cải tiến + 4 Change Request) | M2 | 13/29 | 18/29 | 7 | 0 / 186 | 0 / 465 |
+| Mission 3 (29 lượt = 25 cải tiến + 4 Change Request) | **M3** | **28/29** | **28/29** | 1 | 0 / 186 | 0 / 465 |
+| Mission 2 (14 lượt) | M2 | 13/13 + 1 đổi có chủ đích | 13/13 | 0 | 0 / 96 | 0 / 160 |
+| Mission 2 (14 lượt) | **M3** | **13/13** + 1 đổi có chủ đích | 13/13 | 0 | 0 / 96 | 0 / 160 |
 
 \* *Hành vi đúng* bỏ qua các kỳ vọng về thông tin Mission 2 vốn không xuất ra (ngày tính, tra cứu cho ai, nguyên văn…), để không tính "thiếu trường" là "trả lời sai".
+\*\* *Giao thoa* (thêm cho Change Request, mục 4): số lượt mà một tài liệu mật làm thay đổi bất cứ thứ gì người không được xem nó nhìn thấy.
 
 | Yêu cầu | M2: đạt · hành vi đúng | M3: đạt · hành vi đúng |
 |---|---|---|
@@ -115,6 +118,7 @@ Ví dụ trước → sau (trích nguyên văn, ngày tra cứu 15/10/2026):
 | R3 Mâu thuẫn giữa các cấp | 1/2 · 1/2 | 2/2 · 2/2 |
 | R4 Chưa đủ căn cứ | 5/7 · 5/7 | 7/7 · 7/7 |
 | R5 Kiểm chứng nguồn | 0/2 · 2/2 | 2/2 · 2/2 |
+| CR B2 Khác quyền truy cập (mục 4) | 2/4 · 3/4 | 3/4 · 3/4 |
 
 Đọc bảng: R5 không đổi *hành vi* — câu trả lời của M2 vốn đúng; cái M3 thêm là *khả năng kiểm chứng* câu trả lời đó. Khác biệt hành vi lớn nhất nằm ở R1 và R2.
 
@@ -122,8 +126,8 @@ Không hồi quy:
 - **12/14** câu trả lời của bộ Mission 2 **giống từng byte** với kết quả Mission 2 đã commit. Hai lượt khác: TC06 thêm một dòng "Lý do:" cho mâu thuẫn; TC11 đổi có chủ đích.
 - **83** unit test của Mission 2 chạy trên code M3: 81 đạt nguyên trạng, 2 đổi vì số lượng dữ liệu (19→21 tài liệu, 5→6 persona, thêm cảnh báo linter dự kiến). Tổng cộng **118** unit test.
 - Hiệu chỉnh ngưỡng (bộ 18 câu riêng): ngưỡng vẫn 0.59, 17/18; luật "căn cứ mỏng" đổi quyết định của **0/18** câu ([`eval/results/m3/calibration.md`](eval/results/m3/calibration.md)).
-- **0 rò rỉ / 174 lượt**, với 3 tài liệu mật: 2 của M2 và **A-PLT-02** (danh bạ trực chỉ nhóm Platform xem, có canary) được cài riêng để tấn công tính năng tra cứu. Ma trận kiểm cả các trường mới (ngữ cảnh, nguồn đã xem xét, lịch sử phiên bản, gợi ý của `CLARIFY`).
-- **Chế độ Gemini** (`gemini-3.5-flash-lite`, 20/10/2026, [`m3_gemini.md`](eval/results/m3/m3_gemini.md), [`m2_gemini.md`](eval/results/m3/m2_gemini.md)): bộ M3 25/25, bộ M2 13/13 (+ TC11 đổi có chủ đích), 0 rò rỉ ở cả hai (174 và 96 lượt; context gửi Gemini cũng được kiểm). Câu trả lời tra cứu giữ đúng khung "không áp dụng cho bạn"; TC12 vẫn không làm theo chỉ thị nhúng. 3 câu ở bộ M3 rơi về trích nguyên văn, cả 3 vì Gemini tự cộng thâm niên (13 + 1 = 14, 14 + 1 = 15) và hậu kiểm số chặn — giới hạn đã biết từ M2. Đáng chú ý: với câu "năm 2025", con số Gemini tự tính (**14**) trùng đúng số của *phiên bản hiện hành* — chính loại nhầm lẫn khiến M2 quyết định không nới hậu kiểm.
+- **0 rò rỉ / 186 lượt** (174 trước Change Request), với 3 tài liệu mật: 2 của M2 và **A-PLT-02** (danh bạ trực chỉ nhóm Platform xem, có canary) được cài riêng để tấn công tính năng tra cứu. Ma trận kiểm cả các trường mới (ngữ cảnh, nguồn đã xem xét, lịch sử phiên bản, gợi ý của `CLARIFY`).
+- **Chế độ Gemini** (`gemini-3.5-flash-lite`, 20/10/2026, [`m3_gemini.md`](eval/results/m3/m3_gemini.md), [`m2_gemini.md`](eval/results/m3/m2_gemini.md)): bộ M3 25/25, bộ M2 13/13 (+ TC11 đổi có chủ đích), 0 rò rỉ ở cả hai (174 và 96 lượt; context gửi Gemini cũng được kiểm). Bộ M3 chạy lại ngày 22/10 cùng Change Request: 28/29, 0 rò rỉ / 186, 0 giao thoa / 465 (mục 4.5). Câu trả lời tra cứu giữ đúng khung "không áp dụng cho bạn"; TC12 vẫn không làm theo chỉ thị nhúng. 3 câu ở bộ M3 rơi về trích nguyên văn, cả 3 vì Gemini tự cộng thâm niên (13 + 1 = 14, 14 + 1 = 15) và hậu kiểm số chặn — giới hạn đã biết từ M2. Đáng chú ý: với câu "năm 2025", con số Gemini tự tính (**14**) trùng đúng số của *phiên bản hiện hành* — chính loại nhầm lẫn khiến M2 quyết định không nới hậu kiểm.
 
 Quy trình: kỳ vọng `cases_m3.yaml` viết trước khi sửa `core/` và đã chạy trên code M2 (lần chạy 0, lưu lại). Mọi câu trả lời của lần chạy cuối được đọc lại bằng mắt — nhờ vậy thấy hai câu ngoài bộ test ở mục 2.6.
 
@@ -139,10 +143,17 @@ Theo kết quả chạy, không theo dự đoán:
    | Tuấn · "Khung lương khối kỹ thuật là bao nhiêu?" | trích mục *Nguyên tắc xét tăng lương* thay vì *Khung lương kỹ sư* | Sai mục: tiêu đề tài liệu ghép vào mọi mục nên hai mục gần hoà điểm (cùng gốc với lỗi TC02 của M2) |
    | Linh · "Tháng 3/2026 tôi được làm việc từ xa mấy ngày?" | M2: 2 ngày (bản hiện hành) · **M3: 1 ngày** (bản có hiệu lực tháng 3/2026) | M3 đúng |
 
-2. **Hiểu "lúc nào" và "về ai" dựa trên luật.** Năm/ngày tuyệt đối và cách gọi đơn vị khai báo sẵn thì hiểu; "năm sau", "bên game", "team Plat" thì không. "Năm Y" tính tại 01/01/Y nên thay đổi giữa năm của năm được hỏi không được nêu.
+2. **Hiểu "lúc nào" và "về ai" dựa trên luật.** Năm/ngày tuyệt đối và cách gọi đơn vị khai báo sẵn thì hiểu; "năm sau", "bên game", "team Plat" thì không. "Năm Y" tính tại 01/01/Y nên thay đổi giữa năm của năm được hỏi không được nêu. Ngày/tháng không có năm ("tháng 3") không bị đoán; câu trả lời nói rõ đang tính theo ngày nào (mục 2.7).
 3. **Metadata sai → trả lời sai một cách tự tin** (giữ nguyên từ M2). Thêm một chỗ phụ thuộc: cửa sổ hiệu lực của bản lưu trữ phải đúng.
 4. **Danh tính là ô chọn persona.** Toàn bộ kiểm soát quyền đúng *với giả định* danh tính đúng.
 5. **Từ chối nhầm vì khác từ** ("giấy tờ" / "hồ sơ") chưa sửa — chủ động để lại (mục 2.3).
+
+### 2.7 Sửa thêm sau lần chạy lại ngày 22/10/2026
+
+| Phát hiện | Sửa | Bằng chứng |
+|---|---|---|
+| Câu hỏi có ngày/tháng nhưng **không có năm** ("Tháng 3 tôi được làm việc từ xa mấy ngày một tuần?") bị bỏ qua mốc thời gian **mà không nói gì**: trả 2 ngày của bản hiện hành, trong khi tháng 3/2026 là 1 ngày | Không đoán năm: hỏi vào tháng 10 thì "tháng 3" có thể là tháng 3 vừa qua hoặc sắp tới, còn "trước 31/03" thường là hạn chót chứ không phải thời điểm hỏi. Câu trả lời giữ ngày tra cứu, và dòng đầu (code chèn, giữ nguyên cả khi Gemini viết) nói rõ: *"Câu hỏi nhắc tới “Tháng 3” nhưng không nêu năm; mình trả lời theo các tài liệu có hiệu lực ngày tra cứu …; hãy ghi rõ năm (ví dụ “tháng 3/2026”)"*. Không nhận "24/7", "1/2 ngày", "6 tháng 1 lần" (`core/context.py`, `core/pipeline.py`) | 3 unit test mới. Không câu nào trong hai bộ kiểm có ngày/tháng thiếu năm, nên mọi câu trả lời của cả hai bộ giữ nguyên từng byte; hiệu chỉnh giữ nguyên |
+| Lần chạy Gemini ngày 22/10: câu trả lời của Hoa (M3-06) kết thúc bằng "**[context]**" — Gemini lấy tên thẻ `<context>` trong prompt làm nhãn trích dẫn. Hậu kiểm chỉ kiểm nhãn dạng `[S1]` nên để lọt. Không phải rò rỉ (nội dung thẻ là thông tin người hỏi được thấy), nhưng người dùng thấy một nhãn lạ | Kiểm 1 coi **mọi** nhãn trong ngoặc vuông là trích dẫn ("[S1, S2]" là hai nhãn) và bắt phải là nguồn đã cung cấp; nếu không, câu trả lời rơi về trích nguyên văn (`core/answer.py`) | 2 unit test mới. Chạy lại bộ M3 ở chế độ Gemini sau khi sửa: 28/29, 0 rò rỉ / 186, 0 giao thoa / 465, không còn nhãn lạ nào. Lần này Gemini không viết nhãn lạ nên bản sửa chưa phải ra tay; nó được kiểm bằng unit test |
 
 ---
 
@@ -154,7 +165,7 @@ Chạy: `python -m eval.run_eval` (bộ M3) · `python -m eval.run_eval --suite 
 |---|---|
 | Chạy lại test quan trọng của M2 | Toàn bộ 12 case / 14 lượt + ma trận rò rỉ + 83 unit test M2, trên code M3 ([`m2_extractive.md`](eval/results/m3/m2_extractive.md)) |
 | ≥ 3 test cho phần cải tiến | 11 case / 25 lượt ([`cases_m3.yaml`](eval/cases_m3.yaml), [`m3_extractive.md`](eval/results/m3/m3_extractive.md)) + 35 unit test mới |
-| ≥ 1 test cho Change Request | **Chưa có Change Request được chỉ định** — sẽ thêm `CR-01` khi có |
+| ≥ 1 test cho Change Request | CR-01 (4 lượt, B2) + ma trận không giao thoa (465 lượt bộ M3, 160 lượt bộ M2) + 7 unit test ([`test_change_request.py`](tests/test_change_request.py)) — mục 4 |
 | ≥ 1 edge case / tình huống khó | M3-03 (năm 2027: bản nháp không được lọt), M3-05 (năm không có quy định), M3-08 (tra cứu không mở rộng quyền, tự xưng chức danh), M3-10 Nam (mức sàn chỉ xét đúng đối tượng) |
 | ≥ 1 regression test | Bộ M2 đầy đủ; M3-09 (f)(g): câu trả lời được không bị `CLARIFY` chặn nhầm; M3-06 Linh: thành viên nhóm vẫn nhận như cũ |
 
@@ -165,45 +176,84 @@ Chạy: `python -m eval.run_eval` (bộ M3) · `python -m eval.run_eval --suite 
 | M3-03 | R1 · edge | Năm 2027 → bản 3, không bản nháp 16 ngày | Đạt | Câu hỏi về tương lai cần cảnh báo "còn có thể thay đổi" |
 | M3-04 | R1 | Từ 01/01/2027 → bản 3 + quy định hôm nay | Đạt | — |
 | M3-05 | R1 · edge | Năm 2020 → từ chối | Đạt | Không có quy định thì không lấy bản hiện hành thay vào |
-| M3-06 | R2 | Hoa tra cứu nhóm con (có nhãn); Linh như cũ; Minh từ chối | Đạt | Thay kỳ vọng TC11 — quyết định nghiệp vụ, ghi trong DECISIONS |
+| M3-06 | R2 | Hoa tra cứu nhóm con (có nhãn); Linh như cũ; Minh từ chối | Đạt | Thay kỳ vọng TC11 — quyết định nghiệp vụ, ghi ở mục 2.3 |
 | M3-07 | R2 | HR hỏi về thử việc; thực tập sinh hỏi về chính thức | Đạt | Viết kỳ vọng này làm lộ một báo động giả: FAQ cho nhân sự chính thức bị gắn cờ "lệch" với mục thử việc — đã sửa |
 | M3-08 | R2 · bảo mật | Không tra cứu công ty khác; trưởng phòng không thấy tài liệu chỉ nhóm con xem; tự xưng chức danh vô hiệu | Đạt | Tra cứu thu hẹp, không mở rộng quyền — kiểm bằng canary mới |
 | M3-09 | R4 | Câu gốc + 4 câu mới không có câu trả lời: không trả lời tự tin; 2 câu trả lời được: vẫn trả lời | Đạt | Lần chạy 0 bắt được lỗi không dự đoán ("con mấy"/"còn mấy"). Bằng chứng cho luật mới mỏng (mục 2.6) |
 | M3-10 | R3 | Quân: `CONFLICT` dưới mức sàn; Nam (thử việc): không ảnh hưởng | Đạt | Mức sàn chỉ áp cho đúng đối tượng nó bảo vệ |
 | M3-11 | R5 | Nguyên văn + mã nội dung; FAQ trong "đã xem xét"; bản 2 trong lịch sử | Đạt | Nguyên văn được kiểm khớp từng ký tự với tài liệu |
+| CR-01 | CR | Cùng câu hỏi: Tuấn (HR) nhận đầy đủ từ A-SAL-01; Linh nhận phần FAQ mình được xem, giống hệt khi A-SAL-01 không tồn tại | 3/4 — Linh hỏi "bậc 2" bị từ chối chung thay vì nhận lời chỉ dẫn ở FAQ | Lọc quyền từ M2 đã đúng; cái thiếu là phép thử đủ mạnh để chứng minh, và một kênh lộ qua quan hệ thay thế (mục 4) |
 
 ---
 
-## 4. Ba câu quyết định bắt buộc
+## 4. Change Request B2 — Khác quyền truy cập
 
-### 4.1 Sau khi nhận yêu cầu mới, bạn đã ưu tiên thay đổi điều gì và chủ động chưa làm điều gì? Vì sao?
+> Hai người dùng hỏi cùng một câu nhưng một người không được phép truy cập tài liệu chứa câu trả lời đầy đủ. (Nhận 22/10/2026.)
 
-Mình không bắt đầu từ danh sách tính năng mà chạy thử Mission 2 với câu hỏi theo đúng 5 yêu cầu. Lỗi nặng nhất nằm ở R1 và R2 (hành vi đúng 1/5 và 6/9): hỏi về năm 2025 bị từ chối, đặt ngày về 2025 thì trả **sai số**, trưởng phòng hay HR hỏi về người khác đều bị từ chối. Các lỗi này cùng một gốc — M2 coi người hỏi vừa là người *được xem*, vừa là người *được áp dụng*, và luôn tính *hôm nay*. Vì vậy **ưu tiên số 1** là tách *ai hỏi* (quyền), *hỏi về ai* (phạm vi) và *hỏi về lúc nào* (phiên bản), với một nguyên tắc không đổi: quyền luôn tính theo người hỏi. Sau đó, theo mức nghiêm trọng: hỏi lại thay vì trả lời khi căn cứ chỉ là vài âm tiết khớp ngẫu nhiên (lỗi thật từ M2), báo mâu thuẫn khi cấp dưới thấp hơn mức sàn, và cho xem nguyên văn để kiểm chứng.
+### 4.1 Hiểu yêu cầu
 
-Chủ động **chưa làm**: tìm kiếm ngữ nghĩa — sửa được từ chối nhầm, nhưng không nằm trong 5 yêu cầu, phải hiệu chỉnh lại ngưỡng và là thay đổi dễ gây hồi quy nhất; tra cứu sang **công ty khác** — vì người hỏi chỉ thấy tài liệu Tập đoàn nên sẽ nhận mức sàn 12 ngày trình bày như quy định Công ty A (thật là 14), sai có nhãn còn tệ hơn từ chối; mốc thời gian tương đối — "năm sau" trong kho này thường là nội dung câu hỏi; phát hiện mâu thuẫn không có số — cần LLM để phán, không kiểm được ổn định.
+Mission 2 đã có trường hợp "một người có quyền, một người không có gì để xem" (TC04: thực tập sinh hỏi khung lương → câu từ chối chung). Điểm mới của B2 nằm ở chữ *đầy đủ*: người không có quyền vẫn xem được **một phần** câu trả lời từ tài liệu khác. Câu hỏi thật là hệ thống được nói gì với người đó.
 
-### 4.2 Thay đổi nào tạo ra khác biệt lớn nhất giữa sản phẩm Mission 2 và Mission 3? Bạn dùng bằng chứng nào để kết luận phiên bản mới tốt hơn?
+Dữ liệu cũ không có tình huống này (cả 3 tài liệu mật đều không có tài liệu công khai cùng chủ đề), nên mình thêm [`A-FAQ-02`](data/docs/A-FAQ-02_v1.md), FAQ lương thưởng mà mọi nhân sự Công ty A xem được. Mục 1 nói *khi nào* xét tăng lương (tháng 4) nhưng không nói *tăng tối đa bao nhiêu*; con số 15% chỉ có trong A-SAL-01, tài liệu chỉ Phòng Nhân sự xem. Mục 2 nói khung lương không công bố chung và nên hỏi ai.
 
-**Tách "ai hỏi" khỏi "hỏi về ai, vào lúc nào".** Tính theo hành vi, nó đưa R1 từ 1/5 lên 5/5 và R2 từ 6/9 lên 9/9 — phần lớn khác biệt hành vi giữa hai phiên bản — và trả lời câu hỏi nghiệp vụ còn mở của Mission 2 (TC11).
+### 4.2 Quyết định
 
-Bằng chứng:
-1. **Cùng bộ kiểm, cùng dữ liệu, chỉ khác code** — `eval/compare.py` lấy `core/` của commit Mission 2 từ git và chạy cạnh code mới: bộ Mission 3 **11/25 → 25/25**; tính riêng hành vi (bỏ các trường M2 vốn không có) **15/25 → 25/25**.
-2. **Không hồi quy:** bộ Mission 2 vẫn 13/13 (TC11 đổi có chủ đích, kỳ vọng cũ vẫn để trong file); **12/14 câu trả lời giống từng byte**; 81/83 unit test cũ đạt nguyên trạng (2 đổi vì số lượng dữ liệu); hiệu chỉnh ngưỡng không đổi (17/18), luật mới đổi 0/18 quyết định.
-3. **An toàn không giảm:** 0 rò rỉ / 174 lượt, gồm một tài liệu mật mới cài riêng để tấn công tính năng tra cứu.
-4. **Quy trình chống tự lừa:** kỳ vọng viết và chạy trên code cũ *trước* khi sửa (lần chạy 0 lưu lại); mọi câu trả lời được đọc lại — nhờ vậy ghi được cả những câu M3 vẫn sai (mục 2.6), không chỉ con số đạt.
+| Câu hỏi | Tuấn (HR, xem được A-SAL-01) | Linh (kỹ sư, không xem được) |
+|---|---|---|
+| "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?" | Đầy đủ: tháng 4, tối đa 15%, không vượt trần của bậc (chính sách thắng FAQ) | Đúng phần Linh được xem: tháng 4, mức tăng do Phòng Nhân sự thông báo riêng |
 
-Giới hạn của bằng chứng: bộ 25 lượt do chính mình viết. Con số "25/25" dễ đẹp; bằng chứng mạnh hơn là từng lỗi cụ thể của M2, có giải thích nguyên nhân, kèm việc không hồi quy.
+Nguyên tắc: **mọi thứ Linh thấy phải giống hệt khi A-SAL-01 không tồn tại** — câu trả lời, trạng thái, nguồn, ghi chú, cờ, đầu mối, trace, nguồn đã xem xét, lịch sử phiên bản. Hệ thống không nói "có thông tin đầy đủ hơn mà bạn chưa được xem", vì chính câu đó tiết lộ có một tài liệu mật về chủ đề này. Với khung lương thì vô hại; với "kế hoạch tái cấu trúc" thì không. Đây cũng là lý do M2 dùng một câu từ chối chung cho cả "không có dữ liệu" lẫn "không có quyền".
 
-### 4.3 Nếu sản phẩm này được đưa cho người dùng thật vào ngày mai, rủi ro hoặc giới hạn lớn nhất còn lại là gì? Bạn sẽ ưu tiên xử lý nó như thế nào?
+Nguyên tắc đó để lại hai việc, mỗi việc giao cho người làm được:
 
-**Điều kiện tiên quyết, không phải rủi ro:** danh tính hiện là ô chọn persona. Mọi kiểm soát quyền đúng *với giả định* danh tính đúng — ngày mai ai cũng chọn được "Tuấn (HR)" để xem khung lương. Không đưa cho người dùng thật trước khi nối SSO và lấy đơn vị, vai trò, loại hợp đồng từ hệ thống nhân sự.
+- **Người không có quyền cần biết hỏi thêm ở đâu** → chủ sở hữu viết điều đó vào tài liệu họ xem được (A-FAQ-02 mục 2). Tiết lộ hay không là quyết định của chủ sở hữu, không phải điều hệ thống tự suy ra từ tài liệu bị ẩn.
+- **Phần được xem có thể *khác* phần bị ẩn** (ví dụ FAQ ghi 10%, chính sách mật ghi 15%) → không cảnh báo được người hỏi mà không làm lộ tài liệu, nên cảnh báo **chủ sở hữu**, lúc xuất bản, bằng linter.
 
-**Rủi ro lớn nhất sau đó: câu trả lời sai nhưng tự tin**, ở những chỗ code không tự phát hiện được:
-- câu hỏi khớp ngẫu nhiên ở mức cụm từ ("Khi nào tôi được ký hợp đồng chính thức?" → trả mục nghỉ phép thử việc), hoặc chọn nhầm mục trong cùng tài liệu ("khung lương" → mục xét tăng lương) — cả hai đã thấy khi chạy;
-- metadata sai (phạm vi, đối tượng, ngày hiệu lực) — hệ thống tin metadata tuyệt đối;
-- người dùng thật diễn đạt đa dạng hơn bộ 25 câu do mình viết, nên tỉ lệ thật chưa đo được.
+### 4.3 Chẩn đoán trước khi sửa (lần chạy 0)
 
-**Ưu tiên xử lý:**
-1. **Thí điểm có đo:** một công ty, tài liệu HR thật; mỗi câu trả lời có nút "đúng / sai / không liên quan"; ghi log câu hỏi + trace (tôn trọng quyền riêng tư). Mục tiêu đầu tiên là *đo* tỉ lệ sai-tự-tin trên câu hỏi thật, rồi mới sửa.
-2. **Metadata là cổng xuất bản:** linter chặn đăng tài liệu có lỗi (thiếu ngày, chồng phiên bản, dưới mức sàn); chủ sở hữu duyệt topic / đối tượng (có thể để LLM gợi ý, người duyệt).
-3. **Chặn sai-tự-tin bằng dữ liệu thật:** dùng log thí điểm làm bộ hiệu chỉnh mới, rồi mới thêm tìm kiếm ngữ nghĩa *phía sau* lớp lọc quyền hiện có và kiểm "mục được chọn có thật sự trả lời câu hỏi" — đo bằng chính log đó, không bằng bộ test tự viết.
+Dữ liệu và kỳ vọng CR-01 được viết trước, rồi chạy trên code chưa sửa ([`run0_before_cr.md`](eval/results/m3/run0_before_cr.md)):
+
+- **Lọc quyền đã đúng từ M2.** Linh nhận FAQ, không có 15%, tên hay mã của A-SAL-01. Ma trận không giao thoa (mới, mục 4.4) cho **0 khác biệt / 465 lượt**. Lần chạy đầu báo 81 khác biệt, nhưng tất cả do lỗi của chính bộ kiểm: nó so bộ đếm tài liệu bị loại ở những câu dừng trước bước lọc. Mình sửa bộ kiểm, không sửa hệ thống.
+- **Một kênh lộ dữ liệu chưa chạm tới**, tìm thấy khi đọc code: một phiên bản bị coi là "đã thay thế" dựa trên *mọi* phiên bản, kể cả bản người hỏi không được xem. Nếu bản v2 mật thay thế bản v1 công khai, người không có quyền mất v1, tức câu trả lời đổi vì một tài liệu họ không thấy. Test dựng đúng tình huống này **chưa đạt** trên code cũ.
+- **Linh hỏi "Khung lương kỹ sư bậc 2 là bao nhiêu?" bị từ chối chung** thay vì nhận lời chỉ dẫn ở FAQ mục 2 (độ phủ 0.44 < 0.59, vì FAQ không nhắc "kỹ sư", "bậc 2"). An toàn, đúng đầu mối Phòng Nhân sự Công ty A, nhưng không như kỳ vọng.
+
+### 4.4 Thay đổi
+
+| Thay đổi | Ở đâu | Vì sao |
+|---|---|---|
+| Chỉ phiên bản người hỏi **được xem** mới loại được phiên bản khác | `core/access.py`, `filter_for` | Đóng kênh lộ ở trên. Người không xem được v2 tiếp tục nhận v1 (có thể đã cũ); đổi lại, linter báo chủ sở hữu |
+| Luật linter `visibility_gap` | `core/lint.py`, `_visibility_checks` | Báo khi (a) một nguồn mà người không xem được tài liệu mật vẫn xem được, cùng chủ đề, cùng áp dụng cho họ, ghi con số tài liệu mật không có; (b) bản mới ít người được xem hơn bản nó thay thế. Xét mọi tổ hợp đơn vị × vai trò × loại hợp đồng. Chỉ hiện ở chế độ kiểm định |
+| Kỳ vọng `same_as_without` và ma trận **không giao thoa** | `eval/run_eval.py` | Mạnh hơn ma trận rò rỉ (chỉ tìm ID và canary): một con số được diễn đạt lại, một trạng thái khác, một nguồn biến mất cũng làm lộ tài liệu. Với mỗi tài liệu mật × mỗi persona không được xem × mọi câu hỏi: chạy trên kho đầy đủ và trên kho bỏ tài liệu đó, so mọi trường người dùng thấy. Chỉ được khác tổng số tài liệu bị ẩn, và phải giảm đúng số tài liệu đã bỏ |
+| Dữ liệu A-FAQ-02, case CR-01 (4 lượt), 7 unit test | `data/`, `eval/cases_m3.yaml`, [`tests/test_change_request.py`](tests/test_change_request.py) | |
+| Chỉ số "Giao thoa" trong tab Kiểm thử | `app.py` | |
+
+**Chủ động không làm:**
+
+| Việc | Vì sao |
+|---|---|
+| Nói với người hỏi "có thông tin đầy đủ hơn, bạn chưa có quyền xem" | Tiết lộ sự tồn tại của tài liệu mật. Nếu doanh nghiệp muốn, cách đúng là một trường metadata do chủ sở hữu bật cho từng tài liệu (mặc định tắt), kèm luồng xin quyền. Đó là quyết định nghiệp vụ, không phải thứ hệ thống tự suy ra |
+| Từ chối khi phần được xem bị tài liệu mật ghi đè | Một lời từ chối "bất thường" khi có tài liệu công khai khớp câu hỏi cũng là một cách lộ. Linter xử lý từ gốc |
+| Ẩn tổng số tài liệu "Không có quyền xem" trong trace | Con số không phụ thuộc câu hỏi nên không nói gì về chủ đề. Nếu doanh nghiệp coi cả con số này là nhạy cảm, chỉ cần bỏ một dòng giao diện |
+| Hạ ngưỡng hoặc thêm từ khoá để Linh nhận FAQ mục 2 | Là chỉnh theo test; đây là giới hạn đã biết của tìm kiếm từ vựng |
+
+### 4.5 Bằng chứng
+
+| | Code M2 | Code M3 + Change Request |
+|---|---|---|
+| CR-01 (4 lượt): đạt · hành vi đúng | 2/4 · 3/4 | 3/4 · 3/4 |
+| Không giao thoa, bộ M3 (3 tài liệu mật × 5 persona không được xem × 31 câu hỏi) | 0 / 465 | **0 / 465** |
+| Không giao thoa, bộ M2 | 0 / 160 | **0 / 160** |
+| Rò rỉ (ID, canary) | 0 / 186 | **0 / 186** |
+
+Đọc bảng: về hành vi, CR-01 trên code M2 và code mới như nhau. Kiến trúc "lọc trước, tìm sau" từ M2 đã đáp ứng B2 trên dữ liệu thật; lượt "chưa đạt" thêm của M2 chỉ vì M2 không liệt kê nguồn đã xem xét. Change Request đóng góp ba thứ khác. Thứ nhất, nó **chứng minh** điều đó bằng một phép thử mạnh hơn. Thứ hai, nó **đóng** một kênh lộ mà dữ liệu hiện tại chưa chạm tới: test `test_hidden_new_version_does_not_retire_the_version_others_see` chưa đạt trên code cũ và đạt sau khi sửa. Thứ ba, nó **chuyển** rủi ro còn lại sang người sửa được (linter).
+
+Không hồi quy: **125** unit test đạt (118 cũ + 7 mới; 1 test cũ đổi số lượng tài liệu 21 → 22). 14/14 câu trả lời bộ M2 giống hệt lần commit Mission 3. Bộ M3 có 24/25 câu giống hệt; lượt khác duy nhất là gợi ý thứ ba của một câu `CLARIFY`, vì thống kê BM25 dịch nhẹ khi kho có thêm tài liệu, còn quyết định không đổi. Hiệu chỉnh vẫn ngưỡng 0.59, đúng 17/18. Linter trên dữ liệu thật không có cảnh báo mới, vì FAQ được viết nhất quán với chính sách.
+
+Chế độ Gemini (`gemini-3.5-flash-lite`, bộ M3 chạy lại đầy đủ ngày 22/10/2026, [`m3_gemini.md`](eval/results/m3/m3_gemini.md)): 28/29 như chế độ trích nguyên văn, 0 rò rỉ / 186, 0 giao thoa / 465. CR-01 đạt 3/4; câu trả lời của Linh chỉ nói tháng 4 và "Phòng Nhân sự thông báo riêng", không tự thêm con số nào, hậu kiểm đạt. Các câu rơi về trích nguyên văn đều là câu Gemini tự cộng thâm niên, như 20/10 (3 câu ở lần chạy đầu, 2 câu ở lần chạy lại sau mục 2.7). Đọc lại câu M3-02 mà Gemini viết ở lần chạy lại ("13 ngày … cộng thêm 1 ngày do đủ 5 năm thâm niên", không nêu tổng nên qua hậu kiểm): đúng theo bản 2, nhưng Gemini dùng thâm niên *hiện tại* (6 năm) cho ngày tra cứu 01/06/2025. Kết luận không đổi ở đây; điều cần biết là hồ sơ người hỏi không được tính lại theo thời điểm hỏi. Lượt "bậc 2" bị từ chối trước khi tới Gemini.
+
+### 4.6 Giới hạn còn lại
+
+1. **Phần được xem có thể thiếu mà không ai nói ra.** Linh hỏi "mức tăng tối đa", FAQ chỉ nói "thông báo riêng". Dòng "Căn cứ" lẽ ra liệt kê "tối đa" là từ không tìm thấy, nhưng khi bỏ dấu, "tối đa" thành "toi da", trùng "tôi đã", và cả hai đều là stopword nên bị loại khỏi câu hỏi. Đây là cùng loại lỗi với "con mấy"/"còn mấy" ở mục 2.2.
+2. **Lời chỉ dẫn của chủ sở hữu không tới được câu hỏi chi tiết** (CR-01, Linh, "bậc 2", chưa đạt). Người hỏi nhận câu từ chối chung, kèm đúng đầu mối Phòng Nhân sự Công ty A.
+3. **Linter chỉ so con số**, giống luật mức sàn: FAQ ghi "được" còn chính sách mật ghi "không được" thì không bắt được.
+4. **Không giao thoa được kiểm trên các câu hỏi của bộ test** (31 câu × 5 persona × 3 tài liệu), không phải mọi câu có thể hỏi. Kênh qua quan hệ thay thế được kiểm bằng unit test vì dữ liệu thật không có trường hợp này.
