@@ -11,7 +11,7 @@ An assistant that answers questions about internal policies **for a specific per
 
 ## Mission 3 — what changed and why
 
-Full report (Vietnamese): **[MISSION3.md](MISSION3.md)** — Before → problem → decision → after → evidence → remaining limits, the test suite, the Change Request, and the three mandatory answers. Change Request: **B2 — different access** (assigned 22/10/2026), [below](#change-request-b2--different-access) and in [MISSION3.md §4](MISSION3.md#4-change-request-b2--khác-quyền-truy-cập).
+Full report (Vietnamese): **[MISSION3.md](MISSION3.md)** — Before → problem → decision → after → evidence → remaining limits, the test suite, and the Change Request. Change Request: **B2 — different access** (assigned 22/10/2026), [below](#change-request-b2--different-access) and in [MISSION3.md §4](MISSION3.md#4-change-request-b2--khác-quyền-truy-cập).
 
 **Diagnosis first.** Before changing anything, questions written for the five new requirements were run against the Mission 2 code. Every question that is not *"what applies to me, today"* broke: a question about 2025 was refused (the year counted as an unknown word); setting the lookup date to mid-2025 returned the **wrong figure** (the group floor, 12 days, instead of Company A's 2025 policy, 13 days — archived versions were dropped even inside their validity window); a manager asking about a sub-team, or HR asking about probation staff, were refused.
 
