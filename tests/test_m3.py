@@ -42,6 +42,14 @@ def test_question_year_sets_the_date_and_tells_what_applies_today(kb):
     assert any("đang áp dụng hôm nay" in n and "14 ngày" in n for n in r.notes)
 
 
+def test_month_without_year_is_answered_for_the_lookup_date_and_says_so(kb):
+    """Before: "Tháng 3 …" silently got today's version (2 days), with nothing saying "tháng 3" was ignored."""
+    r = ask(kb, kb.users["linh"], "Tháng 3 tôi được làm việc từ xa mấy ngày một tuần?", as_of=AS_OF)
+    assert not r.query.shifted and cited(r) == ["GRP-REM-01@2#1"]
+    assert "không nêu năm" in r.context_lines[0] and "tháng 3/2026" in r.context_lines[0]
+    assert r.answer.startswith("_Câu hỏi nhắc tới “Tháng 3”")
+
+
 def test_no_shift_means_mission2_behaviour(kb):
     r = ask(kb, kb.users["linh"], "Tôi được làm việc từ xa mấy ngày một tuần?", as_of=AS_OF)
     assert not r.query.shifted and r.context_lines == []

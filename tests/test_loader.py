@@ -3,7 +3,7 @@ from core.loader import DATA_DIR, is_injection, parse_document
 
 
 def test_loads_all_documents_and_sections(kb):
-    assert len(kb.docs) == 21  # Mission 3 added B-GAME-01 and A-PLT-02
+    assert len(kb.docs) == 22  # Mission 3 added B-GAME-01 and A-PLT-02; Change Request B2 added A-FAQ-02
     assert len(kb.users) == 6  # and Quân (full-time, Sản xuất game)
     assert all(s.topic for s in kb.sections)
 

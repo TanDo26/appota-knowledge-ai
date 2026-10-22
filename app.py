@@ -273,11 +273,14 @@ with tab_eval:
             rows = run_cases(kb, cfg, "extractive")
             leak = run_leak_matrix(kb, cfg, "extractive")
             m = metrics(rows, leak)
-        a, b, c, d = st.columns(4)
+        a, b, c, d, e = st.columns(5)
         a.metric("Lượt đạt", m["runs_passed"])
         b.metric("Đúng trạng thái", m["status_accuracy"])
         c.metric("Nguồn đúng", m["source_accuracy"])
         d.metric("Rò rỉ", m["leaks"], help=f"Trên {m['leak_runs']} lượt persona × câu hỏi")
+        e.metric("Giao thoa", m["interference"],
+                 help=f"Trên {m['interference_runs']} lượt: tài liệu giới hạn có làm thay đổi bất cứ thứ gì "
+                      "người không được xem nó nhìn thấy không (so với kho không có tài liệu đó)")
         st.dataframe(
             [{
                 "Case": r["case"], "Loại": r["type"], "Persona": r["persona"], "Câu hỏi": r["question"],
@@ -291,7 +294,11 @@ with tab_eval:
         if leak["leaks"]:
             st.error("Phát hiện rò rỉ:")
             st.dataframe(leak["leaks"], hide_index=True, width="stretch")
-        st.caption("Đạt theo tiêu chí tự động chưa chắc đúng nội dung — xem `docs/TEST_REPORT.md` cho phần đọc từng câu trả lời.")
+        if leak["interference"]["diffs"]:
+            st.error("Tài liệu giới hạn làm thay đổi kết quả của người không được xem:")
+            st.dataframe(leak["interference"]["diffs"], hide_index=True, width="stretch")
+        st.caption("Đạt theo tiêu chí tự động chưa chắc đúng nội dung — xem `MISSION3.md` và "
+                   "`eval/results/m3/m3_extractive.md` cho phần đọc từng câu trả lời.")
         if m["changed_by_design"]:
             st.caption(f"{m['changed_by_design']} lượt đổi kỳ vọng có chủ đích (không tính đạt/chưa đạt).")
 

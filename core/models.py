@@ -131,6 +131,8 @@ class QueryContext:
     lookup: bool = False  # the answer is about someone other than the asker
     subject_phrases: tuple[str, ...] = ()
     other_company: bool = False  # the question names a unit of another company: not answered
+    undated_phrase: str | None = None  # a day or month named without a year ("tháng 3"): not guessed, reported
+    undated_example: str | None = None  # the same with the lookup year, to show how to ask ("tháng 3/2026")
 
     @property
     def shifted(self) -> bool:

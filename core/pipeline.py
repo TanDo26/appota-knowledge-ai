@@ -121,6 +121,10 @@ def context_lines(kb: KnowledgeBase, user: User, q: QueryContext) -> list[str]:
     elif q.shifted:
         lines.append(f"Theo các tài liệu có hiệu lực ngày {fmt_date(q.as_of)} (câu hỏi nhắc tới “{q.time_phrase}”), "
                      f"không phải ngày tra cứu {fmt_date(q.base_date)}.")
+    elif q.undated_phrase:
+        lines.append(f"Câu hỏi nhắc tới “{q.undated_phrase}” nhưng không nêu năm; mình trả lời theo các tài liệu có "
+                     f"hiệu lực ngày tra cứu {fmt_date(q.base_date)}. Nếu bạn hỏi về quy định tại một thời điểm cụ "
+                     f"thể, hãy ghi rõ năm (ví dụ “{q.undated_example}”).")
     if q.other_company:
         lines.append(f"Câu hỏi nhắc tới “{', '.join(q.subject_phrases)}”, thuộc công ty khác với công ty của bạn; "
                      "mình chỉ tra cứu quy định trong công ty của bạn.")

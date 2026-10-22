@@ -29,6 +29,19 @@ _WORDY_DATE = re.compile(_LEAD + r"\bngay (\d{1,2}) thang (\d{1,2}) nam (\d{4})\
 _MONTH_YEAR = re.compile(_LEAD + r"(?:\bthang\s+)?(?<![\d/])(\d{1,2})(?:/| nam )(\d{4})(?![\d/])")
 _YEAR = re.compile(_LEAD + r"(?:\bnam\s+)?(?<![\d/.,])((?:19|20)\d{2})(?![\d/.,])")
 
+# A day or month without a year ("tháng 3", "15/3"): in October, "tháng 3" may mean last March or next one,
+# and "trước 31/03" is usually a deadline, not when. The date does not move and is not guessed; the asker
+# is told which date the answer holds for and how to name another one. Not removed from the retrieval query.
+_UNDATED = (
+    (re.compile(r"\bngay (\d{1,2}) thang (\d{1,2})\b(?! nam)"),
+     lambda m, y: _safe_date(y, int(m[2]), int(m[1])) and f"ngày {int(m[1])} tháng {int(m[2])} năm {y}"),
+    # "1/2 ngày" is half a day and "24/7" is round the clock, not dates.
+    (re.compile(r"(?:\bngay\s+)?(?<![\d/.,])(\d{1,2})/(\d{1,2})(?![\d/.,])(?! ngay)"),
+     lambda m, y: m[0] != "24/7" and _safe_date(y, int(m[2]), int(m[1])) and f"{m[1]}/{m[2]}/{y}"),
+    (re.compile(r"\bthang (\d{1,2})\b(?!/| nam| lan)"),
+     lambda m, y: 1 <= int(m[1]) <= 12 and f"tháng {int(m[1])}/{y}"),
+)
+
 # Contract types named in a question. "chính thức" only counts next to a word for staff, so
 # "khi nào ký hợp đồng chính thức" (a probation question) is not read as a question about full-time staff.
 EMPLOYMENT_PATTERNS = {
@@ -44,6 +57,7 @@ class TimeRef:
     phrase: str | None
     ambiguous: bool
     retrieval_text: str  # folded question without the time expressions
+    undated: tuple[str, str] | None = None  # (wording, example with the lookup year) of a date without a year
 
 
 def _nfc(text: str) -> str:
@@ -89,13 +103,28 @@ def parse_time(question: str, base: date) -> TimeRef:
     rest = "".join(" | " if taken[i] and (i == 0 or not taken[i - 1]) else ("" if taken[i] else c)
                    for i, c in enumerate(folded))
     if not spans:
-        return TimeRef(base, None, False, rest)
+        return TimeRef(base, None, False, rest, _undated(question, folded, base.year))
     spans.sort()
     phrases = [_original(question, folded, s, e) for s, e, _ in spans]
     dates = {d for _, _, d in spans}
     if len(dates) > 1:
         return TimeRef(base, ", ".join(phrases), True, rest)
     return TimeRef(dates.pop(), ", ".join(phrases), False, rest)
+
+
+def _undated(question: str, folded: str, year: int) -> tuple[str, str] | None:
+    """The first day or month named without a year, and how to write it with one."""
+    found: list[tuple[int, int, str]] = []
+    for pattern, example in _UNDATED:
+        for m in pattern.finditer(folded):
+            if any(s < m.end() and m.start() < e for s, e, _ in found):
+                continue  # "tháng 3" inside "ngày 5 tháng 3" already taken
+            if text := example(m, year):
+                found.append((m.start(), m.end(), text))
+    if not found:
+        return None
+    start, end, text = min(found)
+    return _original(question, folded, start, end), text
 
 
 def company_of(kb: KnowledgeBase, unit_id: str) -> str:
@@ -141,6 +170,9 @@ def build_query(kb: KnowledgeBase, user: User, question: str, base: date) -> tup
                      f"(ngày tra cứu {base:%d/%m/%Y}).")
     elif time.phrase:
         steps.append(f"Thời điểm: “{time.phrase}” trùng kỳ hiện tại → tính theo ngày tra cứu {base:%d/%m/%Y}.")
+    elif time.undated:
+        steps.append(f"Thời điểm: “{time.undated[0]}” không có năm → không đoán, tính theo ngày tra cứu "
+                     f"{base:%d/%m/%Y} và nói rõ với người hỏi.")
 
     phrases: list[str] = []
     unit = user.unit
@@ -183,5 +215,7 @@ def build_query(kb: KnowledgeBase, user: User, question: str, base: date) -> tup
         lookup=(unit != user.unit or employment != user.employment_type) and not other_company,
         subject_phrases=tuple(phrases),
         other_company=other_company,
+        undated_phrase=time.undated[0] if time.undated else None,
+        undated_example=time.undated[1] if time.undated else None,
     )
     return context, time.retrieval_text, steps

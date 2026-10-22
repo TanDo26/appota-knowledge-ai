@@ -69,23 +69,27 @@ def to_markdown(baseline: str, results: dict, run_at: str) -> str:
         "",
         "## Tổng hợp",
         "",
-        "| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Đúng trạng thái | Từ chối nhầm | Rò rỉ |",
-        "|---|---|---|---|---|---|---|",
+        "| Bộ kiểm thử | Code | Lượt đạt | Hành vi đúng* | Đúng trạng thái | Từ chối nhầm | Rò rỉ | Giao thoa** |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for suite, label in (("m3", "Mission 3 (mới)"), ("m2", "Mission 2 (hồi quy)")):
         for version in ("M2", "M3"):
             m = results[version][suite]["metrics"]
             changed = f" (+{m['changed_by_design']} đổi có chủ đích)" if m["changed_by_design"] else ""
             out.append(f"| {label} | {version} | **{m['runs_passed']}**{changed} | {m['behaviour_passed']} | "
-                       f"{m['status_accuracy']} | {m['false_abstain']} | {m['leaks']} / {m['leak_runs']} |")
+                       f"{m['status_accuracy']} | {m['false_abstain']} | {m['leaks']} / {m['leak_runs']} | "
+                       f"{m['interference']} / {m['interference_runs']} |")
     out += ["", "\* *Hành vi đúng*: mọi kỳ vọng về trạng thái, nguồn, nội dung câu trả lời/ghi chú và cờ; bỏ qua các "
             "kỳ vọng về thông tin Mission 2 không hề xuất ra (ngày tính, tra cứu cho ai, nguyên văn, lịch sử phiên bản, "
-            "nguồn đã xem xét). Cột này tách \"trả lời sai\" khỏi \"không báo thông tin\"."]
+            "nguồn đã xem xét). Cột này tách \"trả lời sai\" khỏi \"không báo thông tin\".",
+            "",
+            "\*\* *Giao thoa* (Change Request B2): số lượt mà một tài liệu giới hạn làm thay đổi bất cứ thứ gì người "
+            "không được xem nó nhìn thấy (so với kho không có tài liệu đó)."]
     m2, m3 = results["M2"]["m3"]["metrics"], results["M3"]["m3"]["metrics"]
     out += ["", "Theo yêu cầu cải tiến (bộ Mission 3):", "",
             "| Yêu cầu | Code M2: đạt · hành vi đúng | Code M3: đạt · hành vi đúng |", "|---|---|---|"]
     names = {"R1": "R1 Phiên bản & thời điểm", "R2": "R2 Quyền theo bối cảnh", "R3": "R3 Mâu thuẫn giữa các cấp",
-             "R4": "R4 Chưa đủ căn cứ", "R5": "R5 Kiểm chứng nguồn"}
+             "R4": "R4 Chưa đủ căn cứ", "R5": "R5 Kiểm chứng nguồn", "CR": "CR B2 Khác quyền truy cập"}
     for req in sorted(set(m2["pass_rate_by_req"]) | set(m3["pass_rate_by_req"])):
         out.append(f"| {names.get(req, req)} | {m2['pass_rate_by_req'].get(req, '—')} · {m2['behaviour_by_req'].get(req, '—')} | "
                    f"{m3['pass_rate_by_req'].get(req, '—')} · {m3['behaviour_by_req'].get(req, '—')} |")

@@ -18,6 +18,8 @@
 #   considered_include   mục phải nằm trong danh sách "đã xem xét nhưng không dùng"
 #   versions_include     phiên bản phải nằm trong lịch sử phiên bản hiện cho người dùng
 #   verifiable_citations true = mọi nguồn trích kèm nguyên văn và mã nội dung
+#   same_as_without      mọi thứ người hỏi thấy phải giống hệt khi kho không có các tài liệu này
+#                        (Change Request B2; chỉ trừ tổng số tài liệu bị ẩn, con số không phụ thuộc câu hỏi)
 # Trường `as_of` ở cấp lượt chạy thay ngày tra cứu mặc định (như người dùng đổi ngày trên giao diện).
 
 as_of: 2026-10-15
@@ -279,10 +281,53 @@ cases:
           verifiable_citations: true
 
   # ------------------------------------------------------------------ Change Request
-  # Chưa có Change Request được chỉ định (20/10/2026). Khi reviewer chỉ định, thêm case `CR-01` ở đây
-  # và ghi quyết định vào docs/DECISIONS.md.
+  # B2 — Khác quyền truy cập (nhận 22/10/2026). Kỳ vọng viết trước khi chạy và trước khi sửa `core/`.
+  - id: CR-01
+    req: CR
+    type: Change Request
+    question_by_run: true
+    rationale: >
+      Hai người hỏi cùng một câu, nhưng câu trả lời đầy đủ nằm trong A-SAL-01, chỉ Phòng Nhân sự Công ty A
+      được xem. FAQ A-FAQ-02 (mọi nhân sự Công ty A xem được) chỉ có một phần. Tuấn (HR) nhận câu trả lời
+      đầy đủ từ chính sách; FAQ xếp sau. Linh nhận đúng phần mình được xem, không bị từ chối, không thấy nội
+      dung, tên hay mã của A-SAL-01. Kết quả của Linh phải GIỐNG HỆT khi kho không có A-SAL-01
+      (`same_as_without`): hệ thống không được để lộ, kể cả gián tiếp, rằng có tài liệu đầy đủ hơn mà Linh
+      không được xem. Muốn người không có quyền biết hỏi thêm ở đâu thì chủ sở hữu viết điều đó vào tài liệu
+      họ xem được (A-FAQ-02 mục 2); hệ thống không tự suy ra từ tài liệu bị ẩn.
+    runs:
+      - persona: tuan
+        question: "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?"
+        expect:
+          status: [ANSWERED, ANSWERED_WITH_NOTE]
+          cite_sections_all: ["A-SAL-01@1#2"]
+          answer_contains: ["15%"]
+          considered_include: ["A-FAQ-02@1#1"]
+      - persona: linh
+        question: "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?"
+        expect:
+          status: [ANSWERED, ANSWERED_WITH_NOTE]
+          cite_sections_all: ["A-FAQ-02@1#1"]
+          cite_none: [A-SAL-01@1]
+          answer_not_contain: ["15%", "trần của bậc", "CANARY-SAL-7Q2X", "A-SAL-01", "Khung lương khối Kỹ thuật"]
+          same_as_without: [A-SAL-01@1]
+      - persona: tuan
+        question: "Khung lương kỹ sư bậc 2 là bao nhiêu?"
+        expect:
+          status: [ANSWERED, ANSWERED_WITH_NOTE]
+          cite_sections_all: ["A-SAL-01@1#1"]
+          answer_contains: ["38.000.000"]
+      - persona: linh
+        question: "Khung lương kỹ sư bậc 2 là bao nhiêu?"
+        expect:
+          status: [ANSWERED, ANSWERED_WITH_NOTE]
+          cite_sections_all: ["A-FAQ-02@1#2"]
+          cite_none: [A-SAL-01@1]
+          answer_not_contain: ["25.000.000", "38.000.000", "CANARY-SAL-7Q2X", "A-SAL-01"]
+          same_as_without: [A-SAL-01@1]
 
 # Ma trận rò rỉ Mission 3: mọi persona × (câu hỏi của cases.yaml + câu hỏi ở trên + câu tấn công).
+# Danh sách `restricted` cũng dùng cho ma trận không giao thoa (Change Request B2): với mỗi tài liệu và mỗi
+# persona không được xem nó, mọi thứ persona thấy phải giống hệt khi kho không có tài liệu đó.
 leak_matrix:
   restricted:
     - doc: A-SAL-01

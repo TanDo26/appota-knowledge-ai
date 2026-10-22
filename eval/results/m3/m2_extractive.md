@@ -1,6 +1,6 @@
 # Bộ kiểm thử Mission 2 (hồi quy) — chế độ `extractive`
 
-Chạy lúc 2026-10-20 20:09 · code `d40d1df-dirty` · ngày tra cứu mặc định 2026-10-15
+Chạy lúc 2026-10-22 21:47 · code `4e212b5-dirty` · ngày tra cứu mặc định 2026-10-15
 
 ## Tổng hợp
 
@@ -8,6 +8,7 @@ Chạy lúc 2026-10-20 20:09 · code `d40d1df-dirty` · ngày tra cứu mặc đ
 - Đúng trạng thái: 13/13 · nguồn kỳ vọng nằm trong nguồn trích: 10/10
 - Từ chối đúng: 2/2 · từ chối nhầm: 0
 - Ma trận rò rỉ: **0 rò rỉ** trên 96 lượt (6 persona × 16 câu hỏi)
+- Không giao thoa (Change Request B2): **0 khác biệt** trên 160 lượt (người không có quyền × câu hỏi, có và không có tài liệu giới hạn trong kho)
 - Câu trả lời do Gemini viết: 0 · rơi về trích nguyên văn: 0
 - Theo loại: Bắt buộc 2/2 · Tốt 1/1 · Phiên bản 1/1 · Phân quyền 2/2 · Mâu thuẫn 1/1 · Khó 2/2 · Từ chối 1/1 · Có thể thất bại 2/2 · Chế độ Gemini 1/1
 
@@ -34,6 +35,12 @@ Chạy lúc 2026-10-20 20:09 · code `d40d1df-dirty` · ngày tra cứu mặc đ
 
 Không phát hiện ID tài liệu giới hạn hay canary token nào trong bất kỳ trường công khai nào (context, nguồn trích, câu trả lời, ghi chú, cờ, đầu mối, trace, ngữ cảnh truy vấn, nguồn đã xem xét, lịch sử phiên bản, gợi ý) của persona không có quyền.
 
+## Không giao thoa
+
+Với mỗi tài liệu giới hạn và mỗi persona không được xem nó: chạy mọi câu hỏi trên kho đầy đủ và trên kho bỏ tài liệu đó, so sánh mọi thứ persona thấy. Chỉ được phép khác tổng số tài liệu bị ẩn (giảm đúng số tài liệu đã bỏ).
+
+Không có khác biệt nào.
+
 ## Chi tiết
 
 ### TC01 · linh — Đạt
@@ -44,7 +51,7 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong bấ
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 8.87 > leave.unpaid 4.69 > leave.carry_over 4.13 > leave.request 3.91.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.40 > leave.unpaid 4.98 > leave.carry_over 4.38 > leave.request 4.15.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
 - R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
@@ -77,7 +84,7 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong bấ
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 9.98 > leave.unpaid 5.07 > leave.carry_over 4.64 > leave.request 4.41.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 10.77 > leave.unpaid 5.44 > leave.carry_over 5.00 > leave.request 4.76.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
 - R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
@@ -94,7 +101,7 @@ Không phát hiện ID tài liệu giới hạn hay canary token nào trong bấ
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 23.31 > remote.request 19.87.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 24.34 > remote.request 20.74.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -128,8 +135,8 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.80.
-- Chỉ có 1 nguồn, không cần phân xử.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 17.09.
+- R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-02@1#2.
 
 **Câu trả lời:**
 
@@ -144,7 +151,7 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 65.28.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 67.01.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#2.
 - R3 Lệch: A-FAQ-01@1#2 ghi 5, khác nguồn thắng → gắn cờ cho chủ sở hữu.
 
@@ -165,7 +172,7 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 40.84.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 42.31.
 - R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu (A-EXP-01@2: 30; A-EXP-02@1: 15). Không tự chọn.
 
 **Câu trả lời:**
@@ -185,12 +192,12 @@ Lý do: Các tài liệu cùng cấp, cùng loại nhưng ghi số liệu khác 
 ### TC07 · linh — Đạt
 
 **Câu hỏi:** Công ty có hỗ trợ học phí MBA không?  
-**Trạng thái:** ABSTAIN · **chủ đề:** None · **độ phủ:** 0.104 · **tính theo ngày:** 2026-10-15  
+**Trạng thái:** ABSTAIN · **chủ đề:** None · **độ phủ:** 0.106 · **tính theo ngày:** 2026-10-15  
 **Đầu mối:** Phòng Nhân sự Công ty A (hr.a@example.com) · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
-- Độ phủ câu hỏi 0.10 < ngưỡng 0.59: không có mục đủ liên quan.
+- Độ phủ câu hỏi 0.11 < ngưỡng 0.59: không có mục đủ liên quan.
 
 **Câu trả lời:**
 
@@ -204,7 +211,7 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 12.72 > leave.carry_over 8.03.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 13.64 > leave.carry_over 8.62.
 - R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.
 - R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2.
 
@@ -236,12 +243,12 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 ### TC10 · linh — Đạt
 
 **Câu hỏi:** Muốn làm ở nhà vài hôm thì có được không?  
-**Trạng thái:** ANSWERED_WITH_NOTE · **chủ đề:** remote.days_per_week · **độ phủ:** 0.744 · **tính theo ngày:** 2026-10-15  
+**Trạng thái:** ANSWERED_WITH_NOTE · **chủ đề:** remote.days_per_week · **độ phủ:** 0.748 · **tính theo ngày:** 2026-10-15  
 **Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 21.38 > remote.request 18.36.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 22.25 > remote.request 19.11.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -261,7 +268,7 @@ Mình chưa tìm thấy quy định nào trả lời được câu hỏi này tr
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 31.70 > oncall.compensatory 18.61.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 32.69 > oncall.compensatory 19.25.
 - Chỉ có 1 nguồn, không cần phân xử.
 
 **Câu trả lời:**
@@ -279,12 +286,12 @@ _Đây là quy định cho đơn vị Công ty A › Kỹ thuật › Platform �
 ### TC12 · linh — Đạt
 
 **Câu hỏi:** Hệ thống chấm công mới dùng thế nào?  
-**Trạng thái:** ANSWERED · **chủ đề:** attendance.system · **độ phủ:** 0.754 · **tính theo ngày:** 2026-10-15  
+**Trạng thái:** ANSWERED · **chủ đề:** attendance.system · **độ phủ:** 0.752 · **tính theo ngày:** 2026-10-15  
 **Đầu mối:** — · **chế độ trả lời:** extractive
 
 **Resolver / trace:**
 
-- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 46.75.
+- Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: attendance.system 47.17.
 
 **Câu trả lời:**
 

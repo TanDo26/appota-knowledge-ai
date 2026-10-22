@@ -21,6 +21,27 @@ def test_full_and_wordy_dates():
     assert parse_time("trong 03/2025", AS_OF).as_of == date(2025, 3, 1)
 
 
+def test_day_or_month_without_year_is_reported_not_guessed():
+    """In October, "tháng 3" may mean last March or next March: the date does not move, the asker is told."""
+    for q, phrase, example in (
+        ("Tháng 3 tôi được làm việc từ xa mấy ngày một tuần?", "Tháng 3", "tháng 3/2026"),
+        ("Ngày 15/3 tôi có được nghỉ không?", "Ngày 15/3", "15/3/2026"),
+        ("ngày 5 tháng 3 tôi được nghỉ mấy ngày?", "ngày 5 tháng 3", "ngày 5 tháng 3 năm 2026"),
+        ("Phép chuyển sang phải dùng trước 31/03 à?", "31/03", "31/03/2026"),
+    ):
+        t = parse_time(q, AS_OF)
+        assert t.as_of == AS_OF and t.phrase is None, q
+        assert t.undated == (phrase, example), q
+
+
+def test_not_a_date_without_year():
+    for q in ("Trực on-call 24/7 có phụ cấp không?", "Nghỉ 1/2 ngày có phải xin phép không?",
+              "Bao lâu được xét lương, 6 tháng 1 lần à?", "Tháng 3/2026 tôi được làm việc từ xa mấy ngày?",
+              "ngày 31/02 thì sao", "Nghỉ 5 ngày liên tục cần báo trước bao lâu?",
+              "Phụ cấp 300.000 đồng mỗi ngày đúng không?", "Lịch đánh giá giữa năm vào tháng mấy?"):
+        assert parse_time(q, AS_OF).undated is None, q
+
+
 def test_current_year_does_not_shift():
     t = parse_time("Năm 2026 tôi được bao nhiêu ngày phép?", AS_OF)
     assert t.as_of == AS_OF and t.phrase == "Năm 2026"

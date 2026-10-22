@@ -2,20 +2,22 @@
   "suite": "m3",
   "mode": "extractive",
   "model": null,
-  "run_at": "2026-10-20 20:09",
-  "commit": "d40d1df-dirty",
+  "run_at": "2026-10-22 21:47",
+  "commit": "4e212b5-dirty",
   "as_of": "2026-10-15",
   "metrics": {
-    "runs_passed": "25/25",
-    "behaviour_passed": "25/25",
-    "cases_passed": "11/11",
+    "runs_passed": "28/29",
+    "behaviour_passed": "28/29",
+    "cases_passed": "11/12",
     "changed_by_design": 0,
     "pass_rate_by_type": {
       "Cải tiến": "19/19",
       "Edge case": "2/2",
-      "Bảo mật": "4/4"
+      "Bảo mật": "4/4",
+      "Change Request": "3/4"
     },
     "pass_rate_by_req": {
+      "CR": "3/4",
       "R1": "5/5",
       "R2": "9/9",
       "R3": "2/2",
@@ -23,6 +25,7 @@
       "R5": "2/2"
     },
     "behaviour_by_req": {
+      "CR": "3/4",
       "R1": "5/5",
       "R2": "9/9",
       "R3": "2/2",
@@ -30,13 +33,15 @@
       "R5": "2/2"
     },
     "source_accuracy": "5/5",
-    "status_accuracy": "25/25",
+    "status_accuracy": "28/29",
     "correct_abstain": "5/5",
-    "false_abstain": 0,
+    "false_abstain": 1,
     "gemini_answers": 0,
     "fallbacks": 0,
     "leaks": 0,
-    "leak_runs": 174
+    "leak_runs": 186,
+    "interference": 0,
+    "interference_runs": 465
   },
   "rows": [
     {
@@ -171,7 +176,7 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 12.72 > leave.carry_over 8.03.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 13.64 > leave.carry_over 8.62.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1.",
         "R4 Cấp tổ chức: CO_A thắng (cấp cha chỉ đặt mức sàn), bỏ GRP-HR-01@2#2."
       ],
@@ -221,7 +226,7 @@
       "coverage": 1.0,
       "topic": "remote.days_per_week",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 23.31 > remote.request 19.87.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: remote.days_per_week 24.34 > remote.request 20.74.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -299,7 +304,7 @@
       "coverage": 1.0,
       "topic": "oncall.allowance",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 31.70 > oncall.compensatory 18.61.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 32.69 > oncall.compensatory 19.25.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -339,7 +344,7 @@
       "coverage": 1.0,
       "topic": "oncall.allowance",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 29.08 > oncall.compensatory 16.97 > oncall.contacts 14.26.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.allowance 30.12 > oncall.compensatory 17.63 > oncall.contacts 14.75.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -419,7 +424,7 @@
       "coverage": 1.0,
       "topic": "leave.annual_days",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 23.25.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.annual_days 23.86.",
         "R2 Đối tượng: A-LEAVE-01@3 có mục riêng cho Thử việc (A-LEAVE-01@3#5), bỏ mục chung A-LEAVE-01@3#1.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#1."
       ],
@@ -535,7 +540,7 @@
       "flags": [],
       "contact": "Văn phòng Phòng Kỹ thuật Công ty A (eng.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.294,
+      "coverage": 0.295,
       "topic": null,
       "resolver_steps": [
         "Độ phủ câu hỏi 0.29 < ngưỡng 0.59: không có mục đủ liên quan."
@@ -573,10 +578,10 @@
       "flags": [],
       "contact": null,
       "answer": "[S1] Danh bạ trực on-call nhóm Platform — phiên bản 1, mục 1. Liên hệ khi trực ngoài giờ, hiệu lực từ 01/03/2026\n> Ngoài giờ hành chính, người trực chính gọi điện thoại cho trưởng nhóm Platform theo số nội bộ 0901-000-111 nếu sự cố chưa khắc phục được sau 30 phút. Mã kiểm soát tài liệu: CANARY-PLT-5W9Z.",
-      "coverage": 0.651,
+      "coverage": 0.655,
       "topic": "oncall.contacts",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.contacts 16.31.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.contacts 16.80.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -610,10 +615,10 @@
       "flags": [],
       "contact": "Văn phòng Phòng Kỹ thuật Công ty A (eng.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.271,
+      "coverage": 0.547,
       "topic": null,
       "resolver_steps": [
-        "Độ phủ câu hỏi 0.27 < ngưỡng 0.59: không có mục đủ liên quan."
+        "Độ phủ câu hỏi 0.55 < ngưỡng 0.59: không có mục đủ liên quan."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -643,8 +648,8 @@
       "notes": [],
       "flags": [],
       "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
-      "answer": "Mình **chưa đủ căn cứ** để trả lời: câu hỏi chỉ khớp với tài liệu ở vài từ rời rạc (“lên”, “ngày”), không khớp cụm từ nào và không tìm thấy “tuần”. Mình không đoán ý bạn.\n\nBạn hỏi lại cụ thể hơn, hoặc tự xem các mục gần nhất dưới đây — **chưa chắc là câu trả lời**:\n- 3. Thủ tục xin nghỉ — Chính sách nghỉ phép Công ty A (phiên bản 3) · khớp: lên, ngày\n- 1. Mức phụ cấp trực — Phụ cấp on-call nhóm Platform (phiên bản 1) · khớp: tuần, ngày\n- 2. Nghỉ bù sau sự cố — Phụ cấp on-call nhóm Platform (phiên bản 1) · khớp: tuần, ngày",
-      "coverage": 0.689,
+      "answer": "Mình **chưa đủ căn cứ** để trả lời: câu hỏi chỉ khớp với tài liệu ở vài từ rời rạc (“lên”, “ngày”), không khớp cụm từ nào và không tìm thấy “tuần”. Mình không đoán ý bạn.\n\nBạn hỏi lại cụ thể hơn, hoặc tự xem các mục gần nhất dưới đây — **chưa chắc là câu trả lời**:\n- 3. Thủ tục xin nghỉ — Chính sách nghỉ phép Công ty A (phiên bản 3) · khớp: lên, ngày\n- 1. Mức phụ cấp trực — Phụ cấp on-call nhóm Platform (phiên bản 1) · khớp: tuần, ngày\n- 1. Số ngày làm việc từ xa — Chính sách làm việc từ xa (phiên bản 2) · khớp: tuần, ngày",
+      "coverage": 0.688,
       "topic": null,
       "resolver_steps": [
         "Căn cứ mỏng: mục đầu (A-LEAVE-01@3#3) chỉ khớp các âm tiết rời (len, ngay), không khớp cụm từ nào của câu hỏi và không đủ mọi từ → hỏi lại, không trả lời."
@@ -678,10 +683,10 @@
       "flags": [],
       "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.264,
+      "coverage": 0.268,
       "topic": null,
       "resolver_steps": [
-        "Độ phủ câu hỏi 0.26 < ngưỡng 0.59: không có mục đủ liên quan."
+        "Độ phủ câu hỏi 0.27 < ngưỡng 0.59: không có mục đủ liên quan."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -712,7 +717,7 @@
       "flags": [],
       "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.315,
+      "coverage": 0.323,
       "topic": null,
       "resolver_steps": [
         "Độ phủ câu hỏi 0.32 < ngưỡng 0.59: không có mục đủ liên quan."
@@ -746,10 +751,10 @@
       "flags": [],
       "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
       "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
-      "coverage": 0.182,
+      "coverage": 0.151,
       "topic": null,
       "resolver_steps": [
-        "Độ phủ câu hỏi 0.18 < ngưỡng 0.59: không có mục đủ liên quan."
+        "Độ phủ câu hỏi 0.15 < ngưỡng 0.59: không có mục đủ liên quan."
       ],
       "postcheck": [],
       "answer_mode": "extractive",
@@ -818,10 +823,10 @@
       "flags": [],
       "contact": null,
       "answer": "[S1] Hướng dẫn trực on-call — phiên bản 1, mục 3. Đổi ca trực, hiệu lực từ 01/02/2026\n> Muốn đổi ca, tự thỏa thuận với đồng nghiệp và cập nhật lịch trên công cụ trực trước ít nhất 24 giờ.",
-      "coverage": 0.938,
+      "coverage": 0.937,
       "topic": "oncall.swap",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.swap 23.96.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: oncall.swap 24.56.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -857,10 +862,10 @@
       "flags": [],
       "contact": null,
       "answer": "[S1] Quy trình công tác phí — phiên bản 1, mục 1. Định mức công tác phí, hiệu lực từ 01/06/2025\n> Phụ cấp lưu trú 250.000 đồng mỗi ngày khi công tác trong nước và 50 USD mỗi ngày khi công tác nước ngoài. Tiền phòng khách sạn tối đa 1.200.000 đồng mỗi đêm.",
-      "coverage": 0.737,
+      "coverage": 0.74,
       "topic": "travel.per_diem",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: travel.per_diem 22.76.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: travel.per_diem 23.50.",
         "Chỉ có 1 nguồn, không cần phân xử."
       ],
       "postcheck": [],
@@ -996,7 +1001,7 @@
       "coverage": 1.0,
       "topic": "leave.carry_over",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 65.28.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: leave.carry_over 67.01.",
         "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-01@1#2.",
         "R3 Lệch: A-FAQ-01@1#2 ghi 5, khác nguồn thắng → gắn cờ cho chủ sở hữu."
       ],
@@ -1037,7 +1042,7 @@
       "coverage": 1.0,
       "topic": "expense.claim_deadline",
       "resolver_steps": [
-        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 40.84.",
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: expense.claim_deadline 42.31.",
         "R5 Mâu thuẫn: tài liệu cùng cấp, cùng loại nhưng khác số liệu (A-EXP-01@2: 30; A-EXP-02@1: 15). Không tự chọn."
       ],
       "postcheck": [],
@@ -1047,12 +1052,206 @@
       "passed": true,
       "behaviour_passed": true,
       "failures": []
+    },
+    {
+      "case": "CR-01",
+      "req": "CR",
+      "type": "Change Request",
+      "persona": "tuan",
+      "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+      "as_of": "2026-10-15",
+      "query_as_of": "2026-10-15",
+      "expect": {
+        "status": [
+          "ANSWERED",
+          "ANSWERED_WITH_NOTE"
+        ],
+        "cite_sections_all": [
+          "A-SAL-01@1#2"
+        ],
+        "answer_contains": [
+          "15%"
+        ],
+        "considered_include": [
+          "A-FAQ-02@1#1"
+        ]
+      },
+      "status": "ANSWERED",
+      "cited": [
+        "A-SAL-01@1#2"
+      ],
+      "notes": [],
+      "flags": [],
+      "contact": null,
+      "answer": "[S1] Khung lương khối Kỹ thuật — phiên bản 1, mục 2. Nguyên tắc xét tăng lương, hiệu lực từ 01/01/2026\n> Xét tăng lương mỗi năm 1 lần vào tháng 4; mức tăng tối đa 15% và không vượt trần của bậc hiện tại. Mã kiểm soát tài liệu: CANARY-SAL-7Q2X.",
+      "coverage": 1.0,
+      "topic": "salary.review",
+      "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.review 40.46.",
+        "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-02@1#1."
+      ],
+      "postcheck": [],
+      "answer_mode": "extractive",
+      "fallback": null,
+      "changed": null,
+      "passed": true,
+      "behaviour_passed": true,
+      "failures": []
+    },
+    {
+      "case": "CR-01",
+      "req": "CR",
+      "type": "Change Request",
+      "persona": "linh",
+      "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+      "as_of": "2026-10-15",
+      "query_as_of": "2026-10-15",
+      "expect": {
+        "status": [
+          "ANSWERED",
+          "ANSWERED_WITH_NOTE"
+        ],
+        "cite_sections_all": [
+          "A-FAQ-02@1#1"
+        ],
+        "cite_none": [
+          "A-SAL-01@1"
+        ],
+        "answer_not_contain": [
+          "15%",
+          "trần của bậc",
+          "CANARY-SAL-7Q2X",
+          "A-SAL-01",
+          "Khung lương khối Kỹ thuật"
+        ],
+        "same_as_without": [
+          "A-SAL-01@1"
+        ]
+      },
+      "status": "ANSWERED",
+      "cited": [
+        "A-FAQ-02@1#1"
+      ],
+      "notes": [],
+      "flags": [],
+      "contact": null,
+      "answer": "[S1] FAQ Lương thưởng Công ty A — phiên bản 1, mục 1. Khi nào được xét tăng lương?, hiệu lực từ 15/01/2026\n> Công ty xét tăng lương mỗi năm một lần vào tháng 4, căn cứ kết quả đánh giá hiệu suất. Mức tăng của từng người do Phòng Nhân sự thông báo riêng qua Cổng nhân sự HRM.",
+      "coverage": 1.0,
+      "topic": "salary.review",
+      "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.review 24.19.",
+        "Chỉ có 1 nguồn, không cần phân xử."
+      ],
+      "postcheck": [],
+      "answer_mode": "extractive",
+      "fallback": null,
+      "changed": null,
+      "passed": true,
+      "behaviour_passed": true,
+      "failures": []
+    },
+    {
+      "case": "CR-01",
+      "req": "CR",
+      "type": "Change Request",
+      "persona": "tuan",
+      "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+      "as_of": "2026-10-15",
+      "query_as_of": "2026-10-15",
+      "expect": {
+        "status": [
+          "ANSWERED",
+          "ANSWERED_WITH_NOTE"
+        ],
+        "cite_sections_all": [
+          "A-SAL-01@1#1"
+        ],
+        "answer_contains": [
+          "38.000.000"
+        ]
+      },
+      "status": "ANSWERED",
+      "cited": [
+        "A-SAL-01@1#1"
+      ],
+      "notes": [],
+      "flags": [],
+      "contact": null,
+      "answer": "[S1] Khung lương khối Kỹ thuật — phiên bản 1, mục 1. Khung lương kỹ sư, hiệu lực từ 01/01/2026\n> Kỹ sư bậc 1: 18.000.000 – 25.000.000 đồng/tháng. Kỹ sư bậc 2: 25.000.000 – 38.000.000 đồng/tháng. Kỹ sư bậc 3 (Senior): 38.000.000 – 55.000.000 đồng/tháng. Mã kiểm soát tài liệu: CANARY-SAL-7Q2X.",
+      "coverage": 1.0,
+      "topic": "salary.band",
+      "resolver_steps": [
+        "Chọn chủ đề theo tổng điểm các mục liên quan trong top 5: salary.band 24.43.",
+        "R3 Loại tài liệu: policy được ưu tiên, bỏ A-FAQ-02@1#2."
+      ],
+      "postcheck": [],
+      "answer_mode": "extractive",
+      "fallback": null,
+      "changed": null,
+      "passed": true,
+      "behaviour_passed": true,
+      "failures": []
+    },
+    {
+      "case": "CR-01",
+      "req": "CR",
+      "type": "Change Request",
+      "persona": "linh",
+      "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+      "as_of": "2026-10-15",
+      "query_as_of": "2026-10-15",
+      "expect": {
+        "status": [
+          "ANSWERED",
+          "ANSWERED_WITH_NOTE"
+        ],
+        "cite_sections_all": [
+          "A-FAQ-02@1#2"
+        ],
+        "cite_none": [
+          "A-SAL-01@1"
+        ],
+        "answer_not_contain": [
+          "25.000.000",
+          "38.000.000",
+          "CANARY-SAL-7Q2X",
+          "A-SAL-01"
+        ],
+        "same_as_without": [
+          "A-SAL-01@1"
+        ]
+      },
+      "status": "ABSTAIN",
+      "cited": [],
+      "notes": [],
+      "flags": [],
+      "contact": "Phòng Nhân sự Công ty A (hr.a@example.com)",
+      "answer": "Mình chưa tìm thấy quy định nào trả lời được câu hỏi này trong các tài liệu áp dụng cho bạn, nên không đưa ra câu trả lời để tránh sai.",
+      "coverage": 0.444,
+      "topic": null,
+      "resolver_steps": [
+        "Độ phủ câu hỏi 0.44 < ngưỡng 0.59: không có mục đủ liên quan."
+      ],
+      "postcheck": [],
+      "answer_mode": "extractive",
+      "fallback": null,
+      "changed": null,
+      "passed": false,
+      "behaviour_passed": false,
+      "failures": [
+        "trạng thái ABSTAIN, kỳ vọng ANSWERED / ANSWERED_WITH_NOTE",
+        "thiếu mục A-FAQ-02@1#2"
+      ]
     }
   ],
   "leak_matrix": {
-    "runs": 174,
-    "questions": 29,
+    "runs": 186,
+    "questions": 31,
     "personas": 6,
-    "leaks": []
+    "leaks": [],
+    "interference": {
+      "runs": 465,
+      "diffs": []
+    }
   }
 }

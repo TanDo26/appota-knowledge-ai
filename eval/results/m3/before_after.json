@@ -1,6 +1,6 @@
 {
   "baseline": "d40d1df",
-  "run_at": "2026-10-20 20:09",
+  "run_at": "2026-10-22 21:48",
   "M2": {
     "m2": {
       "metrics": {
@@ -28,7 +28,9 @@
         "gemini_answers": 0,
         "fallbacks": 0,
         "leaks": 0,
-        "leak_runs": 96
+        "leak_runs": 96,
+        "interference": 0,
+        "interference_runs": 160
       },
       "rows": [
         {
@@ -256,16 +258,18 @@
     },
     "m3": {
       "metrics": {
-        "runs_passed": "11/25",
-        "behaviour_passed": "15/25",
-        "cases_passed": "1/11",
+        "runs_passed": "13/29",
+        "behaviour_passed": "18/29",
+        "cases_passed": "1/12",
         "changed_by_design": 0,
         "pass_rate_by_type": {
           "Cải tiến": "7/19",
           "Edge case": "0/2",
-          "Bảo mật": "4/4"
+          "Bảo mật": "4/4",
+          "Change Request": "2/4"
         },
         "pass_rate_by_req": {
+          "CR": "2/4",
           "R1": "0/5",
           "R2": "5/9",
           "R3": "1/2",
@@ -273,6 +277,7 @@
           "R5": "0/2"
         },
         "behaviour_by_req": {
+          "CR": "3/4",
           "R1": "1/5",
           "R2": "6/9",
           "R3": "1/2",
@@ -280,13 +285,15 @@
           "R5": "2/2"
         },
         "source_accuracy": "2/5",
-        "status_accuracy": "16/25",
+        "status_accuracy": "19/29",
         "correct_abstain": "5/5",
-        "false_abstain": 6,
+        "false_abstain": 7,
         "gemini_answers": 0,
         "fallbacks": 0,
         "leaks": 0,
-        "leak_runs": 174
+        "leak_runs": 186,
+        "interference": 0,
+        "interference_runs": 465
       },
       "rows": [
         {
@@ -714,6 +721,73 @@
             "A-EXP-02@1#2 thiếu nguyên văn hoặc mã nội dung"
           ],
           "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "tuan",
+          "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-SAL-01@1#2"
+          ],
+          "passed": false,
+          "behaviour_passed": true,
+          "failures": [
+            "không liệt kê A-FAQ-02@1#1 trong nguồn đã xem xét"
+          ],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "linh",
+          "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-FAQ-02@1#1"
+          ],
+          "passed": true,
+          "behaviour_passed": true,
+          "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "tuan",
+          "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-SAL-01@1#1"
+          ],
+          "passed": true,
+          "behaviour_passed": true,
+          "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "linh",
+          "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ABSTAIN",
+          "cited": [],
+          "passed": false,
+          "behaviour_passed": false,
+          "failures": [
+            "trạng thái ABSTAIN, kỳ vọng ANSWERED / ANSWERED_WITH_NOTE",
+            "thiếu mục A-FAQ-02@1#2"
+          ],
+          "changed": null
         }
       ],
       "leaks": []
@@ -746,7 +820,9 @@
         "gemini_answers": 0,
         "fallbacks": 0,
         "leaks": 0,
-        "leak_runs": 96
+        "leak_runs": 96,
+        "interference": 0,
+        "interference_runs": 160
       },
       "rows": [
         {
@@ -979,16 +1055,18 @@
     },
     "m3": {
       "metrics": {
-        "runs_passed": "25/25",
-        "behaviour_passed": "25/25",
-        "cases_passed": "11/11",
+        "runs_passed": "28/29",
+        "behaviour_passed": "28/29",
+        "cases_passed": "11/12",
         "changed_by_design": 0,
         "pass_rate_by_type": {
           "Cải tiến": "19/19",
           "Edge case": "2/2",
-          "Bảo mật": "4/4"
+          "Bảo mật": "4/4",
+          "Change Request": "3/4"
         },
         "pass_rate_by_req": {
+          "CR": "3/4",
           "R1": "5/5",
           "R2": "9/9",
           "R3": "2/2",
@@ -996,6 +1074,7 @@
           "R5": "2/2"
         },
         "behaviour_by_req": {
+          "CR": "3/4",
           "R1": "5/5",
           "R2": "9/9",
           "R3": "2/2",
@@ -1003,13 +1082,15 @@
           "R5": "2/2"
         },
         "source_accuracy": "5/5",
-        "status_accuracy": "25/25",
+        "status_accuracy": "28/29",
         "correct_abstain": "5/5",
-        "false_abstain": 0,
+        "false_abstain": 1,
         "gemini_answers": 0,
         "fallbacks": 0,
         "leaks": 0,
-        "leak_runs": 174
+        "leak_runs": 186,
+        "interference": 0,
+        "interference_runs": 465
       },
       "rows": [
         {
@@ -1392,6 +1473,71 @@
           "passed": true,
           "behaviour_passed": true,
           "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "tuan",
+          "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-SAL-01@1#2"
+          ],
+          "passed": true,
+          "behaviour_passed": true,
+          "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "linh",
+          "question": "Khi nào được xét tăng lương và mức tăng tối đa là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-FAQ-02@1#1"
+          ],
+          "passed": true,
+          "behaviour_passed": true,
+          "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "tuan",
+          "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ANSWERED",
+          "cited": [
+            "A-SAL-01@1#1"
+          ],
+          "passed": true,
+          "behaviour_passed": true,
+          "failures": [],
+          "changed": null
+        },
+        {
+          "case": "CR-01",
+          "req": "CR",
+          "type": "Change Request",
+          "persona": "linh",
+          "question": "Khung lương kỹ sư bậc 2 là bao nhiêu?",
+          "as_of": "2026-10-15",
+          "status": "ABSTAIN",
+          "cited": [],
+          "passed": false,
+          "behaviour_passed": false,
+          "failures": [
+            "trạng thái ABSTAIN, kỳ vọng ANSWERED / ANSWERED_WITH_NOTE",
+            "thiếu mục A-FAQ-02@1#2"
+          ],
           "changed": null
         }
       ],
